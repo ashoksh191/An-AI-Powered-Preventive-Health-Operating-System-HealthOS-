@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://healthos-production.up.railway.app/api/$1"
+    }
+  ]
+}
