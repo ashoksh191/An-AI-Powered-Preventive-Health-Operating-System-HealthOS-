@@ -1,0 +1,160 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String         @id // Matches Supabase Auth User ID (UUID)
+  email         String         @unique
+  role          String         @default("user") // "user" or "admin"
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  profile       HealthProfile?
+  stores        Store[]
+  predictions   Prediction[]
+  healthScores  HealthScore[]
+  lifestylePlan LifestylePlan?
+  dailyLogs     DailyLog[]
+  dailyHealthLogs DailyHealthLog[]
+  chatMessages  ChatMessage[]
+  notifications Notification[]
+  reports       Report[]
+}
+
+model HealthProfile {
+  id                 Int      @id @default(autoincrement())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  age                Int
+  gender             String
+  height             Float    // in centimeters (e.g., 175.5)
+  weight             Float    // in kilograms (e.g., 70.2)
+  bmi                Float    // Automatically calculated and stored
+  sleep              Float    // Sleep duration in hours
+  exercise           Float    // Exercise duration in minutes/day
+  smoking            Boolean  // True if user smokes
+  alcohol            String   // Alcohol intake details (e.g., "None", "Socially", "Daily")
+  waterIntake        Float    // Water intake in Liters
+  stress             String   // Stress level (e.g., "Low", "Medium", "High")
+  familyHistory      String   // Family medical history text
+  existingConditions String   // Existing conditions text
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Store {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key       String
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, key])
+}
+
+model Prediction {
+  id                 Int      @id @default(autoincrement())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  age                Int
+  bmi                Float
+  sleep              Float
+  exercise           Float
+  smoking            Boolean
+  alcohol            String
+  stress             String
+  familyHistory      String
+  existingConditions String
+  results            String   // Stringified JSON representing PredictionResults
+  createdAt          DateTime @default(now())
+}
+
+model HealthScore {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sleep     Float
+  exercise  Float
+  diet      String   // E.g. "Poor", "Average", "Good", "Excellent" or description
+  water     Float    // Water intake in Liters
+  stress    String   // "Low", "Medium", "High"
+  bmi       Float
+  score     Int      // Generated score 0-100
+  breakdown String   // JSON string of breakdown (e.g., individual component scores)
+  createdAt DateTime @default(now())
+}
+
+model LifestylePlan {
+  id             Int      @id @default(autoincrement())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mealPlan       String   // JSON or text
+  workoutPlan    String   // JSON or text
+  waterGoal      Float    // Water intake in Liters
+  sleepSchedule  String   // Sleep schedule
+  stressTips     String   // Stress relief tips
+  goals          String?  // Optional goals/preferences
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model DailyLog {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weight    Float    // Weight in kg
+  sleep     Float    // Sleep duration in hours
+  exercise  Float    // Exercise duration in minutes
+  createdAt DateTime @default(now())
+}
+
+model DailyHealthLog {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weight    Float    // Weight in kg
+  sleep     Float    // Sleep duration in hours
+  exercise  Float    // Exercise duration in minutes
+  water     Float    // Water intake in Liters
+  meals     String   // Meals consumed (text/JSON string)
+  mood      String   // Mood of the day
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String   // "user" or "model"
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "daily_reminder", "system"
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Report {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "weekly_report"
+  title     String
+  content   String   // Text or stringified JSON report content
+  createdAt DateTime @default(now())
+}
+

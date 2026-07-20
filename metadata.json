@@ -1,6 +1,6 @@
 {
   "name": "Supabase Auth Backend",
-  "description": "Express server featuring Supabase Auth integration, registration, login, logout, password reset, session management, and JWT-protected routes.",
+  "description": "Express backend featuring Supabase Auth, disease risk predictions, health scores, dynamic lifestyle planning, comprehensive daily health logging, and personalized AI Health Chat powered by Gemini 3.5-flash.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
