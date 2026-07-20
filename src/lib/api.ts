@@ -1,3 +1,4 @@
+const API_URL = "https://an-ai-powered-preventive-health-operating-system-production.up.railway.app";
 import { calculateDiseaseRisks } from './predictor';
 import { calculateHealthScore } from './health-score';
 
@@ -75,7 +76,7 @@ async function apiRequest(endpoint: string, options: RequestInit = {}) {
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(endpoint, {
+  const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers,
   });

@@ -1,8 +1,0 @@
-{
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "https://an-ai-powered-preventive-health-operating-system-production.up.railway.app/api/$1"
-    }
-  ]
-}
