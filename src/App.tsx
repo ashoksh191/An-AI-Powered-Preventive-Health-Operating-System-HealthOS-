@@ -6,6 +6,7 @@ import {
   Bell, FileText, ShieldAlert, Users, BarChart3
 } from 'lucide-react';
 import ProfileForm from './components/ProfileForm';
+import VoiceNavigation from './components/VoiceNavigation';
 
 export default function App() {
   const [token, setToken] = useState('dev-token-123');
@@ -450,6 +451,12 @@ export default function App() {
           
           {/* Top Status & Dev Mode Control */}
           <div className="flex items-center gap-2 flex-wrap">
+            <VoiceNavigation 
+              onNavigateTab={setActiveTab} 
+              onLogout={handleLogout} 
+              onBypass={handleUseDevToken} 
+            />
+
             {isAuthenticated ? (
               <div className="flex items-center gap-2 bg-indigo-950/40 border border-indigo-900/60 px-3 py-1.5 rounded-lg text-xs">
                 <UserCheck className="w-3.5 h-3.5 text-indigo-400" />
