@@ -2102,11 +2102,29 @@ Please use this state to answer the user's health questions or give insights. Ma
       if (!modelResponse) {
         const msgLower = message.toLowerCase();
 
-        // OFF-TOPIC PLATFORM GROUNDING CHECK
+        // OFF-TOPIC KEYWORDS
         const offTopicKeywords = ['coding', 'python', 'javascript', 'movie', 'actor', 'cricket', 'football', 'sports', 'politic', 'stock', 'crypto', 'bitcoin', 'game', 'singing'];
-        const isOffTopic = offTopicKeywords.some(kw => msgLower.includes(kw));
 
-        if (isOffTopic) {
+        // FRIENDLY GREETINGS & CONVERSATIONAL OPENERS (Namaste, Hello, Hi, Hey, Kaise ho, Thanks)
+        const greetingKeywords = ['namaste', 'hello', 'hi', 'hey', 'kaise ho', 'good morning', 'good evening', 'good afternoon', 'pranam', 'shukriya', 'thanks', 'thank you'];
+        const words = msgLower.trim().split(/\s+/);
+        const isGreeting = greetingKeywords.some(g => words.includes(g) || msgLower.trim() === g);
+
+        if (isGreeting) {
+          if (language === 'Hindi') {
+            modelResponse = `नमस्ते! 🙏 मैं आपका HealthOS AI स्वास्थ सहायक हूँ। मैं आपकी सेहत, लक्षण, आहार, व्यायाम या मेडिकल प्रश्नों में मदद करने के लिए तैयार हूँ।\n\nआज आपकी क्या समस्या या स्वास्थ्य सवाल है? मुझे बेझिझक बताएँ!`;
+          } else if (language === 'Hinglish') {
+            modelResponse = `Namaste! 🙏 Main aapka HealthOS AI Health Assistant hoon. Main aapki health, symptoms, diet, exercise ya medical queries me help karne ke liye ready hoon.\n\nAaj aapko kya issue ya health question hai? Mujhe bejhijhak batayein!`;
+          } else if (language === 'Spanish') {
+            modelResponse = `¡Hola! 🙏 Soy tu Asistente de Salud HealthOS AI. Estoy aquí para ayudarte con tus síntomas, dieta, ejercicios o preguntas médicas.\n\n¿En qué te puedo ayudar hoy?`;
+          } else if (language === 'French') {
+            modelResponse = `Bonjour! 🙏 Je suis votre assistant de santé HealthOS AI. Je suis là pour vous aider avec vos symptômes, votre alimentation ou vos questions médicales.\n\nComment puis-je vous aider aujourd'hui?`;
+          } else {
+            modelResponse = `Hello! Namaste 🙏 I am your HealthOS AI Health Assistant. I am here to assist you with your health vitals, symptoms, diet, exercises, or medical questions.\n\nHow can I help you today? Please share any symptom or health question you have!`;
+          }
+        }
+        // OFF-TOPIC PLATFORM GROUNDING CHECK
+        else if (offTopicKeywords.some(kw => msgLower.includes(kw))) {
           modelResponse = `🛡️ **HealthOS Platform Grounding Notice:**\n\nI am the HealthOS AI Health Assistant, specialized strictly in preventive health, medical queries, lifestyle guidance, and HealthOS platform features. Please ask a health or wellness-related question!`;
         }
         // 0. EMERGENCY FIRST-AID & INJURY PROTOCOLS (Nosebleed, Minor Cuts, Wounds, Burns, Sprains, Fainting)
