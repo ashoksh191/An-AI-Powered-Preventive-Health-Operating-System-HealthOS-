@@ -3,19 +3,20 @@ import {
   Server, Shield, CheckCircle, Terminal, Heart, Sparkles, Key, 
   Activity, LayoutDashboard, Send, User, MessageSquare, Plus, 
   RefreshCw, LogOut, Smile, Droplets, ArrowRight, UserCheck, AlertCircle,
-  Bell, FileText, ShieldAlert, Users, BarChart3, Stethoscope
+  Bell, FileText, ShieldAlert, Users, BarChart3, Stethoscope, Layers
 } from 'lucide-react';
 import ProfileForm from './components/ProfileForm';
 import VoiceNavigation from './components/VoiceNavigation';
 import PhysicianCopilot from './components/PhysicianCopilot';
+import RadiologySummarizer from './components/RadiologySummarizer';
 
 export default function App() {
   const [token, setToken] = useState('dev-token-123');
   const [email, setEmail] = useState('asharofficial10@gmail.com');
   const [password, setPassword] = useState('password123');
   
-  // Tab/Panel selector: 'assessment' | 'copilot' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints'
-  const [activeTab, setActiveTab] = useState<'assessment' | 'copilot' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints'>('copilot');
+  // Tab/Panel selector: 'assessment' | 'copilot' | 'radiology' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints'
+  const [activeTab, setActiveTab] = useState<'assessment' | 'copilot' | 'radiology' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints'>('copilot');
   
   // Profile Assessment state
   const [initialProfile, setInitialProfile] = useState<any>(null);
@@ -655,13 +656,20 @@ export default function App() {
             </div>
 
             {/* Tabs Bar */}
-            <div className="flex items-center gap-2 bg-slate-950/60 border border-slate-800 p-1 rounded-xl self-start flex-wrap">
-              <button 
+            <div className="flex items-center gap-2 bg-slate-950/60 border border-slate-800 p-1 rounded-xl self-start flex-wrap">              <button 
                 onClick={() => setActiveTab('copilot')}
                 className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${activeTab === 'copilot' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/10 font-bold' : 'text-indigo-300 hover:text-white bg-indigo-950/40 border border-indigo-900/60'}`}
               >
                 <Stethoscope className="w-3.5 h-3.5 text-indigo-400" />
                 Physician Co-Pilot
+              </button>
+
+              <button 
+                onClick={() => setActiveTab('radiology')}
+                className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${activeTab === 'radiology' ? 'bg-teal-600 text-white shadow-md shadow-teal-500/10 font-bold' : 'text-teal-300 hover:text-white bg-teal-950/40 border border-teal-900/60'}`}
+              >
+                <Layers className="w-3.5 h-3.5 text-teal-400" />
+                Radiology AI
               </button>
 
               <button 

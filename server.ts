@@ -6,6 +6,7 @@ import { createServer as createViteServer } from 'vite';
 import { getSupabaseClient } from './src/lib/supabase.js';
 import { requireAuth, requireAdmin, AuthenticatedRequest } from './src/middleware/auth.js';
 import { synthesizeClinicalEhr, evaluateDrugInteractions } from './src/lib/copilot-engine.js';
+import { summarizeRadiologyReport } from './src/lib/radiology-engine.js';
 import { 
   getOrCreateUser as syncOrCreateUser, 
   getHealthProfile, 
@@ -2501,6 +2502,32 @@ Maintaining low-stress routines and daily physical activity significantly reduce
       res.status(500).json({
         success: false,
         error: 'Failed to evaluate drug interactions.'
+      });
+    }
+  });
+
+  // Automated Radiology Summarizer & Patient Translator API
+  app.post('/api/radiology/summarize', (req, res) => {
+    try {
+      const { modality, anatomy, rawFindings, impression, icd10, title } = req.body;
+      const result = summarizeRadiologyReport(
+        modality || 'X-Ray',
+        anatomy || 'General Body',
+        rawFindings || '',
+        impression || '',
+        icd10 || '',
+        title || 'Radiology Scan'
+      );
+      res.status(200).json({
+        success: true,
+        result
+      });
+    } catch (err: any) {
+      console.error('Error in Radiology summarization:', err);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to summarize radiology report.',
+        details: err.message
       });
     }
   });
