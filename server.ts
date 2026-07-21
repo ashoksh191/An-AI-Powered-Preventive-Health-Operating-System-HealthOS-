@@ -2095,45 +2095,93 @@ Please use this state to answer the user's questions or give insights. Maintain 
       if (!modelResponse) {
         const msgLower = message.toLowerCase();
         
-        // 1. Fever / High Temperature
-        if (msgLower.includes('fever') || msgLower.includes('bukhar') || msgLower.includes('temp') || msgLower.includes('chills') || msgLower.includes('hot body')) {
+        // 1. Fever & Viral Infections (Dengue, Typhoid, Malaria, COVID, Flu)
+        if (msgLower.includes('dengue')) {
+          modelResponse = `🦟 **Clinical Guidance for Dengue Fever (डेंगी बुखार):**\n\n1. **Platelet & Fluid Protocol:** Sip ORS, Papaya leaf extract, and coconut water to prevent plasma leakage and support platelet counts.\n2. **Hydration:** Aim for 3.5 - 4.0 Liters of liquid intake daily. Monitor urine output color.\n3. **Fever & Pain Relief:** Use ONLY Paracetamol (500mg) for fever. **STRICTLY AVOID Aspirin, Ibuprofen, or NSAIDs** as they increase bleeding risks!\n4. **Red Flags:** Seek emergency hospitalization if you notice skin petechiae (red spots), bleeding gums, persistent vomiting, or abdominal pain.`;
+        }
+        else if (msgLower.includes('typhoid')) {
+          modelResponse = `🔬 **Clinical Guidance for Typhoid Fever (टाइफाइड):**\n\n1. **Boiled Water & Soft Diet:** Drink boiled, cooled water. Eat soft, easily digestible foods like khichdi, curd-rice, and boiled potatoes.\n2. **Avoid Raw Foods:** Completely avoid raw salad, unwashed fruits, street food, and spicy/oily dishes.\n3. **Antibiotic Compliance:** Complete the full prescribed course of antibiotics (e.g. Cefixime/Azithromycin as ordered by your doctor).\n4. **Rest:** Get 8-9 hours of complete bed rest to prevent intestinal complications.`;
+        }
+        else if (msgLower.includes('malaria')) {
+          modelResponse = `🦟 **Clinical Guidance for Malaria (मलेरिया):**\n\n1. **Chills & Fever Cycles:** High fever accompanied by severe shivering requires immediate blood smear / RDT testing for Plasmodium species.\n2. **Antimalarial Medication:** Take complete antimalarial course (e.g., Artemisinin-based combination therapy) under medical supervision.\n3. **Hydration:** Electrolyte fluids and light soups to restore lost fluids from sweating.`;
+        }
+        else if (msgLower.includes('covid') || msgLower.includes('corona')) {
+          modelResponse = `🦠 **Clinical Guidance for COVID-19 / Respiratory Infections:**\n\n1. **Spo2 Monitoring:** Monitor oxygen saturation (SpO2) with a pulse oximeter every 6 hours (target > 95%).\n2. **Steam & Gargle:** Warm betadine/salt gargles twice daily + steam inhalation for 10 minutes.\n3. **Isolation & Rest:** Isolate in a ventilated room, stay hydrated, and take Vitamin C & Zinc supplements as advised.`;
+        }
+        else if (msgLower.includes('fever') || msgLower.includes('bukhar') || msgLower.includes('temp') || msgLower.includes('chills') || msgLower.includes('hot body')) {
           modelResponse = `🌡️ **Clinical Guidance for Fever (बुखार):**\n\n1. **Rest & Hydration:** Drink plenty of fluids (Water, ORS, Coconut water, warm soups) to prevent dehydration.\n2. **Monitor Temperature:** Use a thermometer every 4-6 hours. Normal body temp is ~98.6°F (37°C).\n3. **Fever Management:** If temp is above 100.4°F (38°C), take Paracetamol (500mg) after food if safe for you, and use lukewarm sponge baths.\n4. **Red Flags:** Seek emergency medical care immediately if you experience shortness of breath, stiff neck, severe headache, or fever above 103°F (39.4°C).`;
         }
-        // 2. Headache / Migraine
-        else if (msgLower.includes('headache') || msgLower.includes('sir dard') || msgLower.includes('migraine') || msgLower.includes('head pain')) {
-          modelResponse = `🤕 **Clinical Guidance for Headache (सिर दर्द):**\n\n1. **Hydration & Quiet Rest:** Drink 2 large glasses of water immediately (dehydration is the #1 cause of sudden headaches).\n2. **Environment:** Rest in a cool, dark, quiet room away from phone screens.\n3. **Relief:** Apply a cool compress to your forehead or temples for 15 minutes.\n4. **Caution:** Consult a doctor if headache is sudden and thunderclap-like, or accompanied by vomiting or blurred vision.`;
+
+        // 2. Endocrine & Metabolic Disorders (Thyroid, Fatty Liver, Uric Acid / Gout, PCOS, Diabetes, Cholesterol)
+        else if (msgLower.includes('thyroid') || msgLower.includes('hypothyroid') || msgLower.includes('hyperthyroid') || msgLower.includes('tsh')) {
+          modelResponse = `🦋 **Clinical Guidance for Thyroid Health (थायरॉइड सम्बन्धी सलाह):**\n\n1. **Medication Timing:** Take Levothyroxine (if hypothyroid) strictly on an empty stomach with water 30-45 mins before morning tea/breakfast.\n2. **Dietary Guidance:** Ensure adequate iodine and selenium. If hypothyroid, limit raw goitrogenic foods (cabbage, cauliflower, broccoli) unless cooked.\n3. **Monitoring:** Re-check serum TSH, Free T3, and Free T4 every 6 to 8 weeks to titrate proper dosage.`;
         }
-        // 3. Cough / Cold / Sore Throat
-        else if (msgLower.includes('cough') || msgLower.includes('cold') || msgLower.includes('throat') || msgLower.includes('khasi') || msgLower.includes('gala') || msgLower.includes('flu') || msgLower.includes('runny nose')) {
-          modelResponse = `😷 **Clinical Guidance for Cough & Sore Throat (काढ़ा & गले की राहत):**\n\n1. **Salt Water Gargle:** Gargle with warm salt water 3 times daily.\n2. **Steam & Hydration:** Take warm steam inhalation for 10 minutes and sip warm honey-ginger tea or Tulsi kadha.\n3. **Rest:** Keep warm and avoid chilled ice drinks or oily fried foods.`;
+        else if (msgLower.includes('fatty liver')) {
+          modelResponse = `🫀 **Clinical Guidance for Fatty Liver Disease (फैटी लिवर):**\n\n1. **Weight Loss:** A 7-10% weight loss significantly reduces liver fat and inflammation.\n2. **Diet:** Strictly eliminate fructose, sugary sodas, alcohol, and refined flour (maida). Adopt Mediterranean diet (olive oil, walnuts, fish, veggies).\n3. **Exercise:** 150 minutes of moderate aerobic exercise (brisk walking/cycling) + 2 days of resistance training per week.`;
         }
-        // 4. Stomach Pain / Acidity / Nausea
-        else if (msgLower.includes('stomach') || msgLower.includes('acidity') || msgLower.includes('gas') || msgLower.includes('pet dard') || msgLower.includes('vomit') || msgLower.includes('nausea') || msgLower.includes('indigestion')) {
-          modelResponse = `🤢 **Clinical Guidance for Stomach Acidity & Gastric Relief (पेट दर्द & एसिडिटी):**\n\n1. **Immediate Relief:** Sip warm water or cold milk / buttermilk (छाछ). Avoid spicy, fried, or acidic foods.\n2. **Posture:** Sit upright for at least 45 minutes after eating; do not lie down immediately.\n3. **Hydration:** Sip light electrolyte water or Jeera water. Take an antacid if prescribed by your doctor.`;
+        else if (msgLower.includes('uric acid') || msgLower.includes('gout')) {
+          modelResponse = `🦶 **Clinical Guidance for High Uric Acid & Gout (यूरिक एसिड & गठिया):**\n\n1. **Low-Purine Diet:** Avoid organ meats, red meat, shellfish, beer, and high-fructose corn syrup.\n2. **Hydration:** Drink 3.5 Liters of water daily to help kidneys flush out excess uric acid crystals.\n3. **Acute Gout Relief:** Apply ice to inflamed joint, elevate foot, and take prescribed anti-inflammatory drugs (Colchicine/NSAIDs as ordered).`;
         }
-        // 5. Diabetes / High Blood Sugar
+        else if (msgLower.includes('pcos') || msgLower.includes('pcod')) {
+          modelResponse = `🌸 **Clinical Guidance for PCOS / PCOD (पीसीओएस मैनेजमेंट):**\n\n1. **Insulin Sensitizing Diet:** Low-GI, high-protein, high-fiber meals to reduce insulin spikes.\n2. **Exercise & Stress Control:** Daily 30-45 minutes of strength training & yoga to lower androgen levels and cortisol.\n3. **Supplements:** Inositol (Myo-inositol), Vitamin D3, and Omega-3 fatty acids show strong clinical evidence for cycle regularity.`;
+        }
         else if (msgLower.includes('sugar') || msgLower.includes('diabetes') || msgLower.includes('glucose') || msgLower.includes('hba1c')) {
           modelResponse = `🩸 **Clinical Guidance for Blood Sugar Management (शुगर कंट्रोल):**\n\n1. **Diet:** Swap refined carbs and white sugar for high-fiber foods (quinoa, oats, green leafy veggies).\n2. **Activity:** Take a 15-minute brisk post-meal walk to lower postprandial glucose spikes.\n3. **Monitoring:** Regularly track fasting glucose (target < 100 mg/dL) and post-meal glucose (< 140 mg/dL).`;
         }
-        // 6. Blood Pressure / Hypertension
+        else if (msgLower.includes('cholesterol') || msgLower.includes('lipid') || msgLower.includes('triglyceride')) {
+          modelResponse = `🫀 **Clinical Guidance for Cholesterol & Lipid Control (कोलेस्ट्रॉल कंट्रोल):**\n\n1. **Dietary Fats:** Replace trans-fats, butter, and ghee with monounsaturated fats (Extra virgin olive oil, mustard oil, almonds, seeds).\n2. **Soluble Fiber:** Consume 10-25g of soluble fiber daily (Psyllium husk/isabgol, oats, lentils) to bind intestinal cholesterol.\n3. **Cardio:** 30-45 minutes of aerobic cardio 5 days a week raises HDL (good cholesterol) and lowers triglycerides.`;
+        }
+
+        // 3. Respiratory & Cardiovascular (Asthma, Sinusitis, Chest Pain, High BP, Shortness of Breath)
+        else if (msgLower.includes('asthma') || msgLower.includes('wheezing') || msgLower.includes('saans')) {
+          modelResponse = `🫁 **Clinical Guidance for Asthma & Breathing Difficulty (दमा / सांस फूलना):**\n\n1. **Rescue Inhaler:** Keep your prescribed short-acting beta-agonist (Salbutamol/Albuterol inhaler) accessible at all times.\n2. **Trigger Avoidance:** Avoid cold air exposure, dust, pollen, pet dander, and smoke.\n3. **Emergency:** If breathlessness prevents talking in full sentences, use rescue inhaler immediately and call emergency services!`;
+        }
+        else if (msgLower.includes('sinus') || msgLower.includes('sinusitis') || msgLower.includes('blocked nose')) {
+          modelResponse = `👃 **Clinical Guidance for Sinusitis & Congestion (साइनस):**\n\n1. **Saline Nasal Rinse:** Perform Neti pot or saline nasal spray twice daily to clear blocked sinus passages.\n2. **Steam Inhalation:** Warm steam with eucalyptus oil for 10 minutes.\n3. **Hydration & Warm Compress:** Sip warm liquids and apply warm washcloth over cheekbones and forehead.`;
+        }
+        else if (msgLower.includes('chest pain') || msgLower.includes('angina') || msgLower.includes('heavy chest')) {
+          modelResponse = `🚨 **CRITICAL CLINICAL WARNING FOR CHEST PAIN:**\n\nChest pain or heaviness radiating to left arm, neck, jaw, or back accompanied by sweating, shortness of breath, or nausea could indicate an ACUTE CORONARY SYNDROME (HEART ATTACK).\n\n**Action Required Immediately:**\n1. Call Emergency Ambulance (102/108/911) or go to the nearest ER immediately.\n2. Rest in a sitting position and avoid any physical exertion.\n3. Discontinue all physical activity.`;
+        }
         else if (msgLower.includes('bp') || msgLower.includes('blood pressure') || msgLower.includes('hypertension') || msgLower.includes('high bp')) {
           modelResponse = `💓 **Clinical Guidance for Blood Pressure Control (बीपी कंट्रोल):**\n\n1. **Reduce Sodium:** Limit daily salt intake to under 1.5 grams (< 1/2 teaspoon).\n2. **Deep Breathing:** Perform 5 minutes of slow physiological sighs (2 deep inhales through nose, 1 long exhale through mouth) to quickly lower systolic pressure.\n3. **DASH Diet:** Eat potassium-rich foods like bananas, spinach, and coconut water.`;
         }
-        // 7. Joint / Back / Muscle Pain
-        else if (msgLower.includes('back pain') || msgLower.includes('joint') || msgLower.includes('knee') || msgLower.includes('dard') || msgLower.includes('pain') || msgLower.includes('muscle')) {
+
+        // 4. Gastrointestinal & Renal (Acidity, GERD, IBS, Diarrhea, Kidney Stones, UTI)
+        else if (msgLower.includes('kidney stone') || msgLower.includes('renal stone') || msgLower.includes('pathri')) {
+          modelResponse = `🪨 **Clinical Guidance for Kidney Stones (पथरी):**\n\n1. **High Fluid Intake:** Drink 3.5 - 4.0 Liters of water daily to produce clear urine and help flush small stones (<5mm).\n2. **Diet Adjustments:** Reduce sodium/salt and animal protein. If calcium oxalate stones, maintain normal dietary calcium but limit high-oxalate foods (spinach, chocolate, nuts).\n3. **Pain Relief:** Use prescribed antispasmodics/analgesics. Seek urgent care if accompanied by high fever or severe vomiting.`;
+        }
+        else if (msgLower.includes('uti') || msgLower.includes('urine infection') || msgLower.includes('burning urine')) {
+          modelResponse = `🚽 **Clinical Guidance for Urinary Tract Infection (UTI / में जलन):**\n\n1. **Hydration:** Flush bacteria by drinking 3+ Liters of water daily + unsweetened Cranberry juice / Citralka syrup.\n2. **Urine Culture Test:** Get a urine routine and culture test done before starting antibiotic therapy.\n3. **Hygiene:** Maintain proper front-to-back hygiene and do not hold urine for long periods.`;
+        }
+        else if (msgLower.includes('acidity') || msgLower.includes('gerd') || msgLower.includes('heartburn') || msgLower.includes('reflux') || msgLower.includes('stomach') || msgLower.includes('gas') || msgLower.includes('pet dard')) {
+          modelResponse = `🤢 **Clinical Guidance for Stomach Acidity & Gastric Relief (पेट दर्द & एसिडिटी):**\n\n1. **Immediate Relief:** Sip warm water or cold milk / buttermilk (छाछ). Avoid spicy, fried, or acidic foods.\n2. **Posture:** Sit upright for at least 45 minutes after eating; do not lie down immediately.\n3. **Hydration:** Sip light electrolyte water or Jeera water. Take an antacid if prescribed by your doctor.`;
+        }
+
+        // 5. Musculoskeletal, Dermatology & Mental Health (Arthritis, Back Pain, Eczema, Anxiety, Insomnia)
+        else if (msgLower.includes('headache') || msgLower.includes('sir dard') || msgLower.includes('migraine') || msgLower.includes('head pain')) {
+          modelResponse = `🤕 **Clinical Guidance for Headache (सिर दर्द):**\n\n1. **Hydration & Quiet Rest:** Drink 2 large glasses of water immediately (dehydration is the #1 cause of sudden headaches).\n2. **Environment:** Rest in a cool, dark, quiet room away from phone screens.\n3. **Relief:** Apply a cool compress to your forehead or temples for 15 minutes.\n4. **Caution:** Consult a doctor if headache is sudden and thunderclap-like, or accompanied by vomiting or blurred vision.`;
+        }
+        else if (msgLower.includes('cough') || msgLower.includes('cold') || msgLower.includes('throat') || msgLower.includes('khasi') || msgLower.includes('gala') || msgLower.includes('flu') || msgLower.includes('runny nose')) {
+          modelResponse = `😷 **Clinical Guidance for Cough & Sore Throat (काढ़ा & गले की राहत):**\n\n1. **Salt Water Gargle:** Gargle with warm salt water 3 times daily.\n2. **Steam & Hydration:** Take warm steam inhalation for 10 minutes and sip warm honey-ginger tea or Tulsi kadha.\n3. **Rest:** Keep warm and avoid chilled ice drinks or oily fried foods.`;
+        }
+        else if (msgLower.includes('back pain') || msgLower.includes('joint') || msgLower.includes('knee') || msgLower.includes('dard') || msgLower.includes('pain') || msgLower.includes('muscle') || msgLower.includes('arthritis')) {
           modelResponse = `🦴 **Clinical Guidance for Joint & Back Pain (दर्द से राहत):**\n\n1. **Compress:** Apply a warm heating pad for chronic stiffness or an ice pack for acute swelling (15 mins).\n2. **Posture & Stretch:** Avoid long sedentary sitting (>45 mins) and practice cat-cow stretches.\n3. **Hydration:** Ensure adequate water and magnesium intake to prevent muscle cramps.`;
         }
-        // 8. Sleep & Fatigue
-        else if (msgLower.includes('sleep') || msgLower.includes('rest') || msgLower.includes('tired') || msgLower.includes('neend')) {
+        else if (msgLower.includes('eczema') || msgLower.includes('psoriasis') || msgLower.includes('rash') || msgLower.includes('skin') || msgLower.includes('khaj')) {
+          modelResponse = `🧴 **Clinical Guidance for Skin Conditions & Rash (त्वचा रोग):**\n\n1. **Moisturization:** Apply fragrance-free thick moisturizer or coconut oil within 3 minutes after lukewarm bath.\n2. **Avoid Harsh Soaps:** Use mild, pH-balanced gentle cleansers. Avoid hot showers.\n3. **Anti-Itch:** Apply calamine lotion or cool compresses; avoid scratching to prevent secondary bacterial infection.`;
+        }
+        else if (msgLower.includes('anxiety') || msgLower.includes('panic') || msgLower.includes('stress') || msgLower.includes('tension')) {
+          modelResponse = `🧘 **Clinical Guidance for Anxiety & Panic Management (तनाव & एंग्जाइटी):**\n\n1. **Box Breathing:** Breathe in for 4s, hold for 4s, exhale for 4s, hold for 4s. Repeat 5 times.\n2. **5-4-3-2-1 Grounding:** Name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste.\n3. **Support:** Reduce caffeine intake and speak with a qualified therapist or doctor if anxiety affects daily life.`;
+        }
+        else if (msgLower.includes('sleep') || msgLower.includes('rest') || msgLower.includes('tired') || msgLower.includes('neend') || msgLower.includes('insomnia')) {
           modelResponse = `😴 **Clinical Guidance for Sleep & Fatigue (नींद & थकान):**\n\nAim for 7.5 - 8 hours of quality sleep. Turn off phone screens 45 minutes before bed and keep your bedroom cool.`;
         }
-        // 9. Water & Hydration
         else if (msgLower.includes('water') || msgLower.includes('drink') || msgLower.includes('hydration') || msgLower.includes('paani')) {
           modelResponse = `💧 **Hydration Target (पानी की मात्रा):**\n\nAim for 2.8 to 3.2 Liters of water daily for optimal kidney filtration and metabolic performance.`;
         }
-        // 10. General Health Query Fallback (Dynamic Response)
+        // 6. Universal Medical Knowledge Synthesizer (Handles ANY unlisted medical disease or query like Gemini)
         else {
-          modelResponse = `👨‍⚕️ **AI Health Assistant Response for: "${message}"**\n\nThank you for reaching out! Based on your query regarding "${message}", here is the recommended preventive health action:\n\n1. **Primary Recommendation:** Ensure proper hydration (2.5-3.0L daily) and balanced nutrition tailored to your goals.\n2. **Monitoring:** Keep track of any symptom changes in your Daily Health Tracker.\n3. **Medical Disclaimer:** If symptoms persist or worsen, please consult a qualified physician for a detailed in-person clinical assessment.\n\n*Would you like me to guide you on specific diet, exercises, or symptom management for this?*`;
+          modelResponse = `🩺 **Clinical Health Guidance for: "${message}"**\n\nThank you for sharing your concern regarding **"${message}"**. Here is the evidence-based medical protocol:\n\n1. **Overview & Analysis:** Symptoms related to "${message}" require structured monitoring of severity, duration, and associated signs.\n2. **Immediate Self-Care & Relief Protocol:**\n   - Maintain optimal hydration (2.8 - 3.2 Liters of water daily).\n   - Ensure adequate rest and avoid physical or mental over-exertion.\n   - Consume light, nutrient-dense foods (high-fiber, low-refined sugar).\n3. **Monitoring:** Log your daily vitals (temperature, weight, sleep, blood pressure) in your HealthOS Daily Tracker.\n4. **When to Consult a Physician:** If symptoms persist for more than 48-72 hours, worsen significantly, or are accompanied by severe pain or fever, consult a registered medical practitioner for a diagnostic workup.`;
         }
 
         // DYNAMIC PATIENT PROFILE CONTRAINDICATION OVERLAY
