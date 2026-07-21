@@ -744,6 +744,13 @@ export default function App() {
               </div>
             )}
 
+            {/* Tab Contents: Automated Radiology Summarizer */}
+            {activeTab === 'radiology' && (
+              <div className="flex-grow flex flex-col gap-4 overflow-y-auto">
+                <RadiologySummarizer />
+              </div>
+            )}
+
             {/* Tab Contents: Health Assessment Form */}
             {activeTab === 'assessment' && (
               <div className="flex-grow flex flex-col gap-4 overflow-y-auto">
