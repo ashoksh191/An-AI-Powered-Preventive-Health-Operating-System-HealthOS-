@@ -50,7 +50,7 @@ function generateId(): number {
  */
 export async function checkBackendStatus(): Promise<{ online: boolean; databaseConfigured: boolean }> {
   try {
-    const res = await fetch('/api/health');
+    const res = await fetch(`${API_URL}/api/health`);
     if (res.status === 503) {
       return { online: true, databaseConfigured: false };
     }
