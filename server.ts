@@ -2014,6 +2014,20 @@ Ensure all text descriptions are written in polished, supportive, and motivating
       const systemInstruction = `You are a highly personalized AI Health Chat Assistant.
 Your goal is to provide insightful, empathetic, encouraging, and medically-grounded health and lifestyle feedback to the user based on their specific health profile, prediction risks, health scores, and lifestyle logs.
 
+CRITICAL PATIENT SAFETY & CONTRAINDICATION RULES:
+1. ALWAYS CROSS-EXAMINE THE USER'S SAVED HEALTH PROFILE, CONDITIONS, AND RISKS BEFORE GIVING ANY ADVICE OR REMEDY.
+2. IF THE USER HAS HIGH CHOLESTEROL / DYSLIPIDEMIA / CARDIOVASCULAR RISK:
+   - NEVER suggest butter, ghee, saturated animal fats, full-fat cream, or deep-fried foods.
+   - EXPLICITLY WARN: "Based on your elevated cholesterol/CVD profile, avoid butter, ghee, and high-saturated-fat foods."
+3. IF THE USER HAS DIABETES / PRE-DIABETES / HIGH BLOOD SUGAR:
+   - NEVER suggest sweet kadhas with honey/jaggery, fruit juices with added sugar, sweet teas, or high-glycemic foods.
+   - EXPLICITLY WARN: "Based on your diabetic/blood sugar profile, avoid adding honey, jaggery, or sugar to remedies."
+4. IF THE USER HAS HYPERTENSION / HIGH BLOOD PRESSURE:
+   - NEVER suggest salty soups, heavy sodium snacks, or high-salt gargles.
+   - EXPLICITLY WARN: "Based on your blood pressure profile, keep sodium and salt intake strictly low."
+5. IF THE USER HAS DRUG ALLERGIES OR RENAL (KIDNEY) IMPAIRMENT:
+   - EXPLICITLY WARN against known allergen drugs and suggest safe non-nephrotoxic alternatives.
+
 LANGUAGE FLEXIBILITY: You are fluent in English, Hindi (हिंदी), and Hinglish (Hindi written in Roman/English script). If the user chats with you in Hindi or Hinglish, answer them naturally in fluent Hindi/Hinglish with health advice tailored to Indian lifestyles and diet!
 
 === USER HEALTH PROFILE ===
@@ -2120,6 +2134,23 @@ Please use this state to answer the user's questions or give insights. Maintain 
         // 10. General Health Query Fallback (Dynamic Response)
         else {
           modelResponse = `👨‍⚕️ **AI Health Assistant Response for: "${message}"**\n\nThank you for reaching out! Based on your query regarding "${message}", here is the recommended preventive health action:\n\n1. **Primary Recommendation:** Ensure proper hydration (2.5-3.0L daily) and balanced nutrition tailored to your goals.\n2. **Monitoring:** Keep track of any symptom changes in your Daily Health Tracker.\n3. **Medical Disclaimer:** If symptoms persist or worsen, please consult a qualified physician for a detailed in-person clinical assessment.\n\n*Would you like me to guide you on specific diet, exercises, or symptom management for this?*`;
+        }
+
+        // DYNAMIC PATIENT PROFILE CONTRAINDICATION OVERLAY
+        if (profile) {
+          const profileText = JSON.stringify(profile).toLowerCase();
+          
+          if (profileText.includes('cholesterol') || profileText.includes('lipid') || (profile.weight && profile.height && (profile.weight / Math.pow(profile.height/100, 2)) > 27)) {
+            modelResponse += `\n\n⚠️ **Patient Profile Alert (Cholesterol & Lipids):** Based on your saved health profile, strictly avoid ghee, butter, and deep-fried items when taking remedies or meals.`;
+          }
+
+          if (profileText.includes('diabet') || profileText.includes('sugar') || profile.age > 45) {
+            modelResponse += `\n\n⚠️ **Patient Profile Alert (Blood Sugar):** Because of your diabetic/blood sugar history, do NOT add honey, jaggery (गुड़), or sugar to your warm tea or kadha remedies.`;
+          }
+
+          if (profileText.includes('hypertension') || profileText.includes('bp') || profile.stress === 'High') {
+            modelResponse += `\n\n⚠️ **Patient Profile Alert (Blood Pressure):** Keep your salt and sodium intake strictly low.`;
+          }
         }
 
         if (!process.env.GEMINI_API_KEY) {
