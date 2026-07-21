@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
 import { getSupabaseClient } from './src/lib/supabase.js';
@@ -2471,20 +2472,27 @@ Maintaining low-stress routines and daily physical activity significantly reduce
   // FRONTEND INTEGRATION
   // ==========================================
 
-  if (process.env.NODE_ENV !== 'production') {
-    // Integrate Vite as development middleware
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
+  const distPath = path.join(process.cwd(), 'dist');
+  const distIndexExists = fs.existsSync(path.join(distPath, 'index.html'));
+  const isProductionMode = process.env.NODE_ENV === 'production' || Boolean(process.env.RAILWAY_ENVIRONMENT) || distIndexExists;
+
+  if (isProductionMode && distIndexExists) {
     // Serve static files in production
-    const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
+  } else {
+    try {
+      // Integrate Vite as development middleware
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
+    } catch (vErr) {
+      console.warn('Vite dev server notice:', vErr);
+    }
   }
 
   return app;
