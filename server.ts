@@ -2094,9 +2094,26 @@ Please use this state to answer the user's questions or give insights. Maintain 
 
       if (!modelResponse) {
         const msgLower = message.toLowerCase();
+
+        // 0. EMERGENCY FIRST-AID & INJURY PROTOCOLS (Nosebleed, Minor Cuts, Wounds, Burns, Sprains, Fainting)
+        if (msgLower.includes('nosebleed') || msgLower.includes('nose bleeding') || msgLower.includes('nak se khoon') || msgLower.includes('nose bleed') || msgLower.includes('bleeding nose') || msgLower.includes('epistaxis')) {
+          modelResponse = `🩸 **Emergency First-Aid for Nosebleed (नाक से खून बहना / Nosebleeding):**\n\n1. **Pinch & Lean Forward:** Sit upright and lean your head SLIGHTLY FORWARD (never lean backward, as blood can enter your stomach or airway). Firmly pinch the soft part of your nose just below the bridge for 10-15 continuous minutes without letting go.\n2. **Cold Compress:** Apply an ice pack or cold washcloth to the bridge of your nose and back of your neck.\n3. **Breathing:** Breathe through your mouth while holding pressure.\n4. **Post-Bleeding Care:** Do not blow your nose, pick your nose, or bend over for at least 12 hours after the bleeding stops.\n5. **Red Flags:** Seek emergency medical care if bleeding lasts > 20 minutes despite continuous pressure, or if caused by a severe head blow.`;
+        }
+        else if (msgLower.includes('chot') || msgLower.includes('cut') || msgLower.includes('wound') || msgLower.includes('scrape') || msgLower.includes('injury') || msgLower.includes('bleed') || msgLower.includes('bleeding') || msgLower.includes('hurt')) {
+          modelResponse = `🩹 **Emergency First-Aid for Minor Cuts, Wounds & Scrapes (चोट / घाव का इलाज):**\n\n1. **Clean & Wash:** Immediately wash the wound under clean running tap water with mild soap for 3-5 minutes to remove dirt and bacteria.\n2. **Stop Bleeding:** Apply firm, steady pressure directly over the wound with a clean cloth or sterile gauze for 3 minutes.\n3. **Antiseptic & Bandage:** Apply Betadine or an antibiotic ointment (Neosporin) and cover with a clean sterile adhesive bandage.\n4. **Tetanus Warning:** If the cut was caused by a rusty metal, dirty object, or animal bite, get a Tetanus Toxoid (TT) injection within 24 hours if not vaccinated in the last 5 years!`;
+        }
+        else if (msgLower.includes('burn') || msgLower.includes('burns') || msgLower.includes('jalna') || msgLower.includes('scald')) {
+          modelResponse = `🔥 **Emergency First-Aid for Minor Burns (जल जाना / बर्न का इलाज):**\n\n1. **Cool Water Immediately:** Hold the burned skin under cool running tap water (NOT ice water or ice cubes) for 10-15 minutes to stop thermal damage.\n2. **Soothe & Protect:** Apply Aloe Vera gel or Silver Sulfadiazine (Burnol/Silvadene) cream. Cover loosely with sterile non-stick gauze.\n3. **Strict DON'Ts:** NEVER apply toothpaste, butter, oil, or break blisters! Blisters protect against skin infection.\n4. **Seek Medical Care:** If the burn covers a large area, faces, hands, or causes severe blistering, visit a hospital ER.`;
+        }
+        else if (msgLower.includes('sprain') || msgLower.includes('strain') || msgLower.includes('swelling') || msgLower.includes('moch') || msgLower.includes('twisted')) {
+          modelResponse = `🦴 **Emergency First-Aid for Sprains & Swelling (मोच & सूजन - R.I.C.E Protocol):**\n\n1. **Rest:** Stop moving the injured joint/ankle immediately.\n2. **Ice:** Apply an ice pack wrapped in a towel for 15-20 minutes every 2-3 hours to reduce internal swelling.\n3. **Compression:** Wrap with an elastic crepe bandage firmly (not too tight to cut off circulation).\n4. **Elevation:** Keep the injured leg or arm elevated above heart level using pillows.`;
+        }
+        else if (msgLower.includes('faint') || msgLower.includes('dizzy') || msgLower.includes('dizziness') || msgLower.includes('chakkar')) {
+          modelResponse = `💫 **Emergency First-Aid for Fainting & Dizziness (चक्कर आना / बेहोशी):**\n\n1. **Lie Down & Elevate Legs:** Have the person lie flat on their back and elevate their legs 12 inches off the ground to restore blood flow to the brain.\n2. **Airflow:** Loosen tight clothing and ensure good room ventilation.\n3. **Hydration:** Once conscious, offer small sips of water or glucose/ORS drink. Do not give food/drink while unconscious!`;
+        }
         
         // 1. Fever & Viral Infections (Dengue, Typhoid, Malaria, COVID, Flu)
-        if (msgLower.includes('dengue')) {
+        else if (msgLower.includes('dengue')) {
           modelResponse = `🦟 **Clinical Guidance for Dengue Fever (डेंगी बुखार):**\n\n1. **Platelet & Fluid Protocol:** Sip ORS, Papaya leaf extract, and coconut water to prevent plasma leakage and support platelet counts.\n2. **Hydration:** Aim for 3.5 - 4.0 Liters of liquid intake daily. Monitor urine output color.\n3. **Fever & Pain Relief:** Use ONLY Paracetamol (500mg) for fever. **STRICTLY AVOID Aspirin, Ibuprofen, or NSAIDs** as they increase bleeding risks!\n4. **Red Flags:** Seek emergency hospitalization if you notice skin petechiae (red spots), bleeding gums, persistent vomiting, or abdominal pain.`;
         }
         else if (msgLower.includes('typhoid')) {
