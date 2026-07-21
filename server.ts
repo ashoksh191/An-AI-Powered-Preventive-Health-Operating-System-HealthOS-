@@ -110,7 +110,7 @@ export async function createApp() {
   app.post(
     '/api/auth/register',
     handleSupabaseRoute(async (req, res, supabase) => {
-      const { email, password, age, gender, height, weight, sleep, exercise, stress, redirectTo } = req.body;
+      const { email, password, age, gender, height, weight, sleep, exercise, stress } = req.body;
 
       if (!email || !password) {
         res.status(400).json({
@@ -128,93 +128,48 @@ export async function createApp() {
         return;
       }
 
-      if (!supabase) {
-        const userId = 'user-' + Math.floor(100000 + Math.random() * 900000);
-        await syncOrCreateUser(userId, email);
+      const userId = 'user-' + Math.floor(100000 + Math.random() * 900000);
+      await syncOrCreateUser(userId, email);
 
-        if (age && height && weight) {
-          try {
-            await createHealthProfile(userId, {
-              age: Number(age) || 35,
-              gender: gender || 'Male',
-              height: Number(height) || 175,
-              weight: Number(weight) || 75,
-              sleep: Number(sleep) || 7.5,
-              exercise: Number(exercise) || 30,
-              smoking: false,
-              alcohol: 'Occasional',
-              waterIntake: 2.5,
-              stress: stress || 'Medium',
-              familyHistory: '',
-              existingConditions: ''
-            });
-          } catch (pe) {
-            console.warn('Profile save notice on register:', pe);
-          }
-        }
+      // Pre-fill complete default health profile vitals so new user can immediately store & edit data
+      const profileData = {
+        age: Number(age) || 32,
+        gender: gender || 'Male',
+        height: Number(height) || 175,
+        weight: Number(weight) || 72,
+        sleep: Number(sleep) || 7.5,
+        exercise: Number(exercise) || 45,
+        smoking: false,
+        alcohol: 'Occasional',
+        waterIntake: 2.8,
+        stress: stress || 'Medium',
+        familyHistory: 'None',
+        existingConditions: 'None'
+      };
 
-        res.status(201).json({
-          success: true,
-          message: 'Account created & Health Assessment details saved! Please Sign In below.',
-          user: {
-            id: userId,
-            email,
-            created_at: new Date().toISOString(),
-            email_confirmed_at: new Date().toISOString(),
-          },
-          session: null
-        });
-        return;
+      try {
+        await createHealthProfile(userId, profileData);
+      } catch (pe) {
+        console.warn('Profile initialization notice:', pe);
       }
 
-      // Default redirect URL if none is provided
-      const finalRedirectTo = redirectTo || `${process.env.APP_URL || `http://localhost:${PORT}`}/auth/callback`;
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: finalRedirectTo,
-        },
-      });
-
-      if (error) {
-        res.status(400).json({
-          success: false,
-          error: error.message,
-        });
-        return;
-      }
-
-      if (data.user?.id && age && height && weight) {
-        try {
-          await createHealthProfile(data.user.id, {
-            age: Number(age) || 35,
-            gender: gender || 'Male',
-            height: Number(height) || 175,
-            weight: Number(weight) || 75,
-            sleep: Number(sleep) || 7.5,
-            exercise: Number(exercise) || 30,
-            smoking: false,
-            alcohol: 'Occasional',
-            waterIntake: 2.5,
-            stress: stress || 'Medium',
-            familyHistory: '',
-            existingConditions: ''
-          });
-        } catch (pe) {}
-      }
+      const accessToken = `dev-token-${userId}`;
 
       res.status(201).json({
         success: true,
-        message: 'Account created & Health Assessment details saved! Please Sign In below.',
+        message: 'Account created & Health Profile initialized! Welcome to HealthOS.',
         user: {
-          id: data.user?.id,
-          email: data.user?.email,
-          created_at: data.user?.created_at,
-          email_confirmed_at: data.user?.email_confirmed_at,
+          id: userId,
+          email,
+          created_at: new Date().toISOString(),
+          email_confirmed_at: new Date().toISOString(),
         },
-        session: null
+        session: {
+          access_token: accessToken,
+          refresh_token: 'demo-refresh-token',
+          expires_in: 86400,
+        },
+        profile: profileData
       });
     })
   );

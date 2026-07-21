@@ -341,20 +341,17 @@ export default function App() {
         return;
       }
 
-      if (mode === 'register') {
-        setAuthSuccess(data.message || 'Account created & Health Assessment details saved! Please Sign In below.');
-        setAuthMode('login');
-        return;
+      const activeToken = data.session?.access_token || `dev-token-${data.user?.id || 'new-user'}`;
+      setToken(activeToken);
+      setIsAuthenticated(true);
+
+      if (data.profile) {
+        setInitialProfile(data.profile);
       }
-      
-      if (data.session?.access_token) {
-        setToken(data.session.access_token);
-        setIsAuthenticated(true);
-        setAuthSuccess(`Signed in successfully as ${email}!`);
+
+      if (mode === 'register') {
+        setAuthSuccess(`Registration successful! Welcome to your HealthOS Workspace, ${email}.`);
       } else {
-        const activeToken = `dev-token-${data.user?.id || 'active'}`;
-        setToken(activeToken);
-        setIsAuthenticated(true);
         setAuthSuccess(`Signed in successfully as ${email}!`);
       }
     } catch (err: any) {
