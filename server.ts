@@ -126,6 +126,27 @@ export async function createApp() {
         return;
       }
 
+      if (!supabase) {
+        const userId = 'user-' + Math.floor(100000 + Math.random() * 900000);
+        await syncOrCreateUser(userId, email);
+        res.status(201).json({
+          success: true,
+          message: 'Registration successful! Active local developer session initialized.',
+          user: {
+            id: userId,
+            email,
+            created_at: new Date().toISOString(),
+            email_confirmed_at: new Date().toISOString(),
+          },
+          session: {
+            access_token: `dev-token-${userId}`,
+            refresh_token: 'demo-refresh-token',
+            expires_in: 86400,
+          },
+        });
+        return;
+      }
+
       // Default redirect URL if none is provided
       const finalRedirectTo = redirectTo || `${process.env.APP_URL || `http://localhost:${PORT}`}/auth/callback`;
 
@@ -183,6 +204,27 @@ export async function createApp() {
         res.status(400).json({
           success: false,
           error: 'Email and password are required parameters.',
+        });
+        return;
+      }
+
+      if (!supabase) {
+        const userId = 'user-' + Math.floor(100000 + Math.random() * 900000);
+        await syncOrCreateUser(userId, email);
+        res.status(200).json({
+          success: true,
+          message: 'Login successful! Active local developer session initialized.',
+          user: {
+            id: userId,
+            email,
+            created_at: new Date().toISOString(),
+            email_confirmed_at: new Date().toISOString(),
+          },
+          session: {
+            access_token: `dev-token-${userId}`,
+            refresh_token: 'demo-refresh-token',
+            expires_in: 86400,
+          },
         });
         return;
       }
