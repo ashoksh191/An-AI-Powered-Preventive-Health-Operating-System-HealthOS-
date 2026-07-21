@@ -2080,19 +2080,50 @@ Please use this state to answer the user's questions or give insights. Maintain 
 
       if (!modelResponse) {
         const msgLower = message.toLowerCase();
-        if (msgLower.includes('sleep') || msgLower.includes('rest') || msgLower.includes('tired')) {
-          modelResponse = `Based on your health metrics, aiming for 7.5 - 8 hours of quality sleep daily is crucial for cellular repair and cardiovascular recovery. Try keeping your room cool and setting a strict screen shutdown 45 minutes before bed.`;
-        } else if (msgLower.includes('water') || msgLower.includes('drink') || msgLower.includes('hydration')) {
-          modelResponse = `Proper hydration enhances metabolic performance and kidney filtration. Aim to consume around 2.5 - 3.0 Liters of water throughout the day.`;
-        } else if (msgLower.includes('diet') || msgLower.includes('food') || msgLower.includes('eat') || msgLower.includes('weight')) {
-          modelResponse = `Focus on whole foods, lean proteins, high-fiber vegetables, and healthy fats. Minimizing processed sugars helps maintain steady blood glucose and energy levels.`;
-        } else if (msgLower.includes('workout') || msgLower.includes('exercise') || msgLower.includes('gym')) {
-          modelResponse = `Aim for at least 150 minutes of moderate aerobic exercise per week combined with 2-3 strength training sessions for longevity and metabolic fitness.`;
-        } else {
-          modelResponse = `Hello! I am your AI Health Assistant. I have analyzed your profile and daily health metrics. How can I assist you with your fitness, sleep, diet, or preventive wellness targets today?`;
+        
+        // 1. Fever / High Temperature
+        if (msgLower.includes('fever') || msgLower.includes('bukhar') || msgLower.includes('temp') || msgLower.includes('chills') || msgLower.includes('hot body')) {
+          modelResponse = `🌡️ **Clinical Guidance for Fever (बुखार):**\n\n1. **Rest & Hydration:** Drink plenty of fluids (Water, ORS, Coconut water, warm soups) to prevent dehydration.\n2. **Monitor Temperature:** Use a thermometer every 4-6 hours. Normal body temp is ~98.6°F (37°C).\n3. **Fever Management:** If temp is above 100.4°F (38°C), take Paracetamol (500mg) after food if safe for you, and use lukewarm sponge baths.\n4. **Red Flags:** Seek emergency medical care immediately if you experience shortness of breath, stiff neck, severe headache, or fever above 103°F (39.4°C).`;
         }
+        // 2. Headache / Migraine
+        else if (msgLower.includes('headache') || msgLower.includes('sir dard') || msgLower.includes('migraine') || msgLower.includes('head pain')) {
+          modelResponse = `🤕 **Clinical Guidance for Headache (सिर दर्द):**\n\n1. **Hydration & Quiet Rest:** Drink 2 large glasses of water immediately (dehydration is the #1 cause of sudden headaches).\n2. **Environment:** Rest in a cool, dark, quiet room away from phone screens.\n3. **Relief:** Apply a cool compress to your forehead or temples for 15 minutes.\n4. **Caution:** Consult a doctor if headache is sudden and thunderclap-like, or accompanied by vomiting or blurred vision.`;
+        }
+        // 3. Cough / Cold / Sore Throat
+        else if (msgLower.includes('cough') || msgLower.includes('cold') || msgLower.includes('throat') || msgLower.includes('khasi') || msgLower.includes('gala') || msgLower.includes('flu') || msgLower.includes('runny nose')) {
+          modelResponse = `😷 **Clinical Guidance for Cough & Sore Throat (काढ़ा & गले की राहत):**\n\n1. **Salt Water Gargle:** Gargle with warm salt water 3 times daily.\n2. **Steam & Hydration:** Take warm steam inhalation for 10 minutes and sip warm honey-ginger tea or Tulsi kadha.\n3. **Rest:** Keep warm and avoid chilled ice drinks or oily fried foods.`;
+        }
+        // 4. Stomach Pain / Acidity / Nausea
+        else if (msgLower.includes('stomach') || msgLower.includes('acidity') || msgLower.includes('gas') || msgLower.includes('pet dard') || msgLower.includes('vomit') || msgLower.includes('nausea') || msgLower.includes('indigestion')) {
+          modelResponse = `🤢 **Clinical Guidance for Stomach Acidity & Gastric Relief (पेट दर्द & एसिडिटी):**\n\n1. **Immediate Relief:** Sip warm water or cold milk / buttermilk (छाछ). Avoid spicy, fried, or acidic foods.\n2. **Posture:** Sit upright for at least 45 minutes after eating; do not lie down immediately.\n3. **Hydration:** Sip light electrolyte water or Jeera water. Take an antacid if prescribed by your doctor.`;
+        }
+        // 5. Diabetes / High Blood Sugar
+        else if (msgLower.includes('sugar') || msgLower.includes('diabetes') || msgLower.includes('glucose') || msgLower.includes('hba1c')) {
+          modelResponse = `🩸 **Clinical Guidance for Blood Sugar Management (शुगर कंट्रोल):**\n\n1. **Diet:** Swap refined carbs and white sugar for high-fiber foods (quinoa, oats, green leafy veggies).\n2. **Activity:** Take a 15-minute brisk post-meal walk to lower postprandial glucose spikes.\n3. **Monitoring:** Regularly track fasting glucose (target < 100 mg/dL) and post-meal glucose (< 140 mg/dL).`;
+        }
+        // 6. Blood Pressure / Hypertension
+        else if (msgLower.includes('bp') || msgLower.includes('blood pressure') || msgLower.includes('hypertension') || msgLower.includes('high bp')) {
+          modelResponse = `💓 **Clinical Guidance for Blood Pressure Control (बीपी कंट्रोल):**\n\n1. **Reduce Sodium:** Limit daily salt intake to under 1.5 grams (< 1/2 teaspoon).\n2. **Deep Breathing:** Perform 5 minutes of slow physiological sighs (2 deep inhales through nose, 1 long exhale through mouth) to quickly lower systolic pressure.\n3. **DASH Diet:** Eat potassium-rich foods like bananas, spinach, and coconut water.`;
+        }
+        // 7. Joint / Back / Muscle Pain
+        else if (msgLower.includes('back pain') || msgLower.includes('joint') || msgLower.includes('knee') || msgLower.includes('dard') || msgLower.includes('pain') || msgLower.includes('muscle')) {
+          modelResponse = `🦴 **Clinical Guidance for Joint & Back Pain (दर्द से राहत):**\n\n1. **Compress:** Apply a warm heating pad for chronic stiffness or an ice pack for acute swelling (15 mins).\n2. **Posture & Stretch:** Avoid long sedentary sitting (>45 mins) and practice cat-cow stretches.\n3. **Hydration:** Ensure adequate water and magnesium intake to prevent muscle cramps.`;
+        }
+        // 8. Sleep & Fatigue
+        else if (msgLower.includes('sleep') || msgLower.includes('rest') || msgLower.includes('tired') || msgLower.includes('neend')) {
+          modelResponse = `😴 **Clinical Guidance for Sleep & Fatigue (नींद & थकान):**\n\nAim for 7.5 - 8 hours of quality sleep. Turn off phone screens 45 minutes before bed and keep your bedroom cool.`;
+        }
+        // 9. Water & Hydration
+        else if (msgLower.includes('water') || msgLower.includes('drink') || msgLower.includes('hydration') || msgLower.includes('paani')) {
+          modelResponse = `💧 **Hydration Target (पानी की मात्रा):**\n\nAim for 2.8 to 3.2 Liters of water daily for optimal kidney filtration and metabolic performance.`;
+        }
+        // 10. General Health Query Fallback (Dynamic Response)
+        else {
+          modelResponse = `👨‍⚕️ **AI Health Assistant Response for: "${message}"**\n\nThank you for reaching out! Based on your query regarding "${message}", here is the recommended preventive health action:\n\n1. **Primary Recommendation:** Ensure proper hydration (2.5-3.0L daily) and balanced nutrition tailored to your goals.\n2. **Monitoring:** Keep track of any symptom changes in your Daily Health Tracker.\n3. **Medical Disclaimer:** If symptoms persist or worsen, please consult a qualified physician for a detailed in-person clinical assessment.\n\n*Would you like me to guide you on specific diet, exercises, or symptom management for this?*`;
+        }
+
         if (!process.env.GEMINI_API_KEY) {
-          modelResponse += `\n\n*Note: To enable live Google Gemini AI responses, please add your GEMINI_API_KEY in the .env file.*`;
+          modelResponse += `\n\n*Note: Add GEMINI_API_KEY in .env for custom real-time Gemini 2.5 Flash model generation.*`;
         }
       }
 
