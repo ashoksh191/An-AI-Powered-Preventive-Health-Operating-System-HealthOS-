@@ -192,6 +192,143 @@ let notificationIdCounter = 1;
 let reportIdCounter = 1;
 
 // ========================================================
+// SEED CLINICAL BASELINE DATA FOR DEMO / SANDBOX COHORT
+// ========================================================
+function seedClinicalBaselineData() {
+  if (inMemoryUsers.size > 0) return;
+
+  const defaultUser: InMemUser = {
+    id: 'dev-user-id',
+    email: 'asharofficial10@gmail.com',
+    role: 'admin',
+    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+    updatedAt: new Date(),
+  };
+  inMemoryUsers.set(defaultUser.id, defaultUser);
+
+  const sampleProfiles: InMemHealthProfile[] = [
+    {
+      id: profileIdCounter++,
+      userId: 'dev-user-id',
+      age: 38,
+      gender: 'Male',
+      height: 180,
+      weight: 78,
+      bmi: 24.1,
+      sleep: 7.5,
+      exercise: 45,
+      smoking: false,
+      alcohol: 'Occasional',
+      waterIntake: 2.8,
+      stress: 'Low',
+      familyHistory: 'Father had high blood pressure',
+      existingConditions: 'None',
+      createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(),
+    },
+    {
+      id: profileIdCounter++,
+      userId: 'cohort-user-2',
+      age: 42,
+      gender: 'Female',
+      height: 165,
+      weight: 68,
+      bmi: 25.0,
+      sleep: 6.8,
+      exercise: 30,
+      smoking: false,
+      alcohol: 'None',
+      waterIntake: 2.5,
+      stress: 'Medium',
+      familyHistory: 'Type 2 Diabetes in maternal family',
+      existingConditions: 'Mild asthma',
+      createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(),
+    },
+    {
+      id: profileIdCounter++,
+      userId: 'cohort-user-3',
+      age: 51,
+      gender: 'Male',
+      height: 175,
+      weight: 88,
+      bmi: 28.7,
+      sleep: 6.0,
+      exercise: 15,
+      smoking: true,
+      alcohol: 'Daily',
+      waterIntake: 1.8,
+      stress: 'High',
+      familyHistory: 'Coronary Artery Disease',
+      existingConditions: 'Pre-hypertension',
+      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(),
+    }
+  ];
+
+  sampleProfiles.forEach(p => inMemoryProfiles.set(p.userId, p));
+
+  inMemoryPredictions.push({
+    id: predictionIdCounter++,
+    userId: 'dev-user-id',
+    age: 38,
+    bmi: 24.1,
+    sleep: 7.5,
+    exercise: 45,
+    smoking: false,
+    alcohol: 'Occasional',
+    stress: 'Low',
+    familyHistory: 'Father had high blood pressure',
+    existingConditions: 'None',
+    results: JSON.stringify({
+      diabetes: { riskLevel: 'Low', score: 14, description: 'Optimal insulin sensitivity.' },
+      cardiovascular: { riskLevel: 'Moderate', score: 28, description: 'Family history noted.' },
+      hypertension: { riskLevel: 'Moderate', score: 32, description: 'Controlled baseline blood pressure.' },
+      fatigue: { riskLevel: 'Low', score: 10, description: 'High sleep quality score.' }
+    }),
+    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000)
+  });
+
+  inMemoryHealthScores.push({
+    id: healthScoreIdCounter++,
+    userId: 'dev-user-id',
+    sleep: 7.5,
+    exercise: 45,
+    diet: 'Good',
+    water: 2.8,
+    stress: 'Low',
+    bmi: 24.1,
+    score: 84,
+    breakdown: JSON.stringify({ sleepScore: 88, exerciseScore: 85, dietScore: 80, waterScore: 90, stressScore: 82 }),
+    createdAt: new Date()
+  });
+
+  inMemoryDailyHealthLogs.push({
+    id: dailyHealthLogIdCounter++,
+    userId: 'dev-user-id',
+    weight: 78,
+    sleep: 7.5,
+    exercise: 45,
+    water: 2.8,
+    meals: 'Oatmeal for breakfast, Chicken bowl for lunch, Salmon for dinner',
+    mood: 'High energy',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  });
+
+  inMemoryReports.push({
+    id: reportIdCounter++,
+    userId: 'dev-user-id',
+    type: 'weekly_report',
+    title: 'Baseline Clinical Assessment & Longevity Blueprint',
+    content: '### Weekly Progress Summary\n\n- **Sleep:** 7.5h avg\n- **Hydration:** 2.8L daily target\n- **Risk Status:** Low metabolic risk profile.',
+    createdAt: new Date()
+  });
+}
+
+seedClinicalBaselineData();
+
+// ========================================================
 // DATABASE OPERATIONS REPOSITORY
 // ========================================================
 

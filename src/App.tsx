@@ -5,14 +5,21 @@ import {
   RefreshCw, LogOut, Smile, Droplets, ArrowRight, UserCheck, AlertCircle,
   Bell, FileText, ShieldAlert, Users, BarChart3
 } from 'lucide-react';
+import ProfileForm from './components/ProfileForm';
 
 export default function App() {
   const [token, setToken] = useState('dev-token-123');
   const [email, setEmail] = useState('asharofficial10@gmail.com');
   const [password, setPassword] = useState('password123');
   
-  // Tab/Panel selector: 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints'
-  const [activeTab, setActiveTab] = useState<'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints'>('chat');
+  // Tab/Panel selector: 'assessment' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints'
+  const [activeTab, setActiveTab] = useState<'assessment' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints'>('assessment');
+  
+  // Profile Assessment state
+  const [initialProfile, setInitialProfile] = useState<any>(null);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [profileSaveSuccess, setProfileSaveSuccess] = useState('');
+  const [profileSaveError, setProfileSaveError] = useState('');
   
   // Admin state
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
@@ -243,6 +250,45 @@ export default function App() {
       }
     } catch (err) {
       console.error('Error fetching health logs:', err);
+    }
+  };
+
+  // Submit Health Assessment
+  const handleProfileSubmit = async (formData: any) => {
+    setIsSavingProfile(true);
+    setProfileSaveSuccess('');
+    setProfileSaveError('');
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      });
+      const data = await parseSafeJson(res);
+      if (data.success) {
+        setProfileSaveSuccess('Health Assessment & Vitals saved successfully! AI Engine risks and scores updated.');
+        setInitialProfile(data.profile || formData);
+        
+        try {
+          await fetch('/api/prediction', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(formData)
+          });
+        } catch (e) {}
+
+        loadAdminDashboard(token);
+        fetchNotifications(token);
+      } else {
+        setProfileSaveError(data.error || 'Failed to update health profile.');
+      }
+    } catch (err: any) {
+      setProfileSaveError(err.message || 'Connection error saving profile.');
+    } finally {
+      setIsSavingProfile(false);
     }
   };
 
@@ -515,9 +561,88 @@ export default function App() {
 
         {/* Logged in Workspace Dashboard */}
         {isAuthenticated && (
-          <div className="flex-grow flex flex-col gap-6 z-10 min-h-0">
+          <div className="flex-grow flex flex-col gap-5 z-10 min-h-0">
+            {/* End-to-End Clinical & AI Workflow Stepper Bar */}
+            <div className="bg-slate-950/80 border border-slate-800/80 p-3 rounded-xl flex items-center justify-between gap-2 overflow-x-auto text-xs font-sans shadow-xl">
+              {/* Stage 1: Authentication */}
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="px-2.5 py-1 bg-emerald-950/60 border border-emerald-800/60 text-emerald-300 rounded-lg flex items-center gap-1.5 font-medium">
+                  <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>1. Auth Session</span>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+              </div>
+
+              {/* Stage 2: Health Profile / Assessment */}
+              <div className="flex items-center gap-2 shrink-0">
+                <button 
+                  onClick={() => setActiveTab('assessment')}
+                  className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 font-medium transition-all ${activeTab === 'assessment' ? 'bg-indigo-600 text-white shadow-md font-semibold' : 'bg-slate-900 text-slate-300 hover:bg-slate-850 border border-slate-800'}`}
+                >
+                  <Heart className="w-3.5 h-3.5 text-rose-400" />
+                  <span>2. Health Assessment</span>
+                </button>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+              </div>
+
+              {/* Stage 3: AI Engine */}
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="px-2.5 py-1 bg-purple-950/60 border border-purple-800/60 text-purple-300 rounded-lg flex items-center gap-1.5 font-medium">
+                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                  <span>3. AI Risk & Scoring Engine</span>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+              </div>
+
+              {/* Stage 4: Dashboard */}
+              <div className="flex items-center gap-2 shrink-0">
+                <button 
+                  onClick={() => setActiveTab('chat')}
+                  className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 font-medium transition-all ${['chat', 'logs', 'reports'].includes(activeTab) ? 'bg-teal-600 text-white shadow-md font-semibold' : 'bg-slate-900 text-slate-300 hover:bg-slate-850 border border-slate-800'}`}
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5 text-teal-400" />
+                  <span>4. Interactive Dashboard</span>
+                </button>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+              </div>
+
+              {/* Stage 5: Notifications */}
+              <div className="flex items-center gap-2 shrink-0">
+                <button 
+                  onClick={() => setActiveTab('notifications')}
+                  className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 font-medium transition-all ${activeTab === 'notifications' ? 'bg-amber-600 text-white shadow-md font-semibold' : 'bg-slate-900 text-slate-300 hover:bg-slate-850 border border-slate-800'}`}
+                >
+                  <Bell className="w-3.5 h-3.5 text-amber-400" />
+                  <span>5. Notifications ({notifications.length})</span>
+                </button>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+              </div>
+
+              {/* Stage 6: Admin Workspace */}
+              <div className="flex items-center shrink-0">
+                <button 
+                  onClick={() => {
+                    setActiveTab('admin');
+                    loadAdminDashboard(token);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 font-medium transition-all ${activeTab === 'admin' ? 'bg-rose-600 text-white shadow-md font-semibold' : 'bg-slate-900 text-slate-300 hover:bg-slate-850 border border-slate-800'}`}
+                >
+                  <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+                  <span>6. Admin Workspace</span>
+                </button>
+              </div>
+            </div>
+
             {/* Tabs Bar */}
             <div className="flex items-center gap-2 bg-slate-950/60 border border-slate-800 p-1 rounded-xl self-start flex-wrap">
+              <button 
+                onClick={() => setActiveTab('assessment')}
+                className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${activeTab === 'assessment' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/10' : 'text-slate-400 hover:text-slate-200'}`}
+              >
+                <Heart className="w-3.5 h-3.5 text-rose-400" />
+                Health Assessment
+              </button>
+
               <button 
                 onClick={() => setActiveTab('chat')}
                 className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${activeTab === 'chat' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/10' : 'text-slate-400 hover:text-slate-200'}`}
@@ -574,6 +699,29 @@ export default function App() {
                 REST APIs Info
               </button>
             </div>
+
+            {/* Tab Contents: Health Assessment Form */}
+            {activeTab === 'assessment' && (
+              <div className="flex-grow flex flex-col gap-4 overflow-y-auto">
+                {profileSaveSuccess && (
+                  <div className="p-3 bg-emerald-950/60 border border-emerald-800/80 text-emerald-300 rounded-xl text-xs flex items-center gap-2 shadow-lg">
+                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>{profileSaveSuccess}</span>
+                  </div>
+                )}
+                {profileSaveError && (
+                  <div className="p-3 bg-rose-950/60 border border-rose-800/80 text-rose-300 rounded-xl text-xs flex items-center gap-2 shadow-lg">
+                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>{profileSaveError}</span>
+                  </div>
+                )}
+                <ProfileForm 
+                  initialProfile={initialProfile} 
+                  onSubmit={handleProfileSubmit} 
+                  isLoading={isSavingProfile} 
+                />
+              </div>
+            )}
 
             {/* Tab Contents: AI Chat Companion */}
             {activeTab === 'chat' && (
