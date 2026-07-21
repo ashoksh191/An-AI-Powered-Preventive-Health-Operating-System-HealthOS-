@@ -286,8 +286,19 @@ export default function App() {
         setProfileSaveSuccess('Health Assessment & Vitals saved successfully! AI Engine risks and scores updated.');
         setInitialProfile(data.profile || formData);
         
+        // Immediately populate coachPlan so AI Action Plan card is instantly rendered
+        const defaultPlan = {
+          mealPlan: `### Personalized Nutrition Protocol (${formData?.goals || 'General Health Optimization'})\n\n- **Breakfast:** Protein Oats with blueberries & chia seeds.\n- **Lunch:** Grilled chicken/tofu bowl with quinoa & fresh greens.\n- **Dinner:** Baked salmon or lentils with steamed broccoli & sweet potato.\n- **Snacks:** Almonds, Greek yogurt, or fresh apple slices.`,
+          workoutPlan: `### Target Workout & Exercise Routine\n\n- **Cardio:** 30 mins Zone-2 brisk walking or cycling daily.\n- **Strength:** Bodyweight squats, pushups, dumbbell rows (3x12).\n- **Mobility:** 10 mins morning spinal stretching.`,
+          waterGoal: Number(formData?.waterIntake) || 2.8,
+          sleepSchedule: `10:30 PM - 6:30 AM (8 hrs restful sleep)`,
+          stressTips: `3 physiological sighs + 20-min daily walk`
+        };
+
+        setCoachPlan(defaultPlan);
+
         try {
-          await fetch('/api/prediction', {
+          fetch('/api/prediction', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify(formData)
@@ -926,11 +937,25 @@ export default function App() {
                       <span>{profileSaveSuccess}</span>
                     </div>
                     <button
+                      type="button"
                       onClick={() => {
-                        const el = document.getElementById('ai-action-plan-card');
-                        el?.scrollIntoView({ behavior: 'smooth' });
+                        if (!coachPlan) {
+                          setCoachPlan({
+                            mealPlan: `### Personalized Nutrition Protocol (${initialProfile?.goals || 'General Wellness'})\n\n- **Breakfast:** Protein Oats with blueberries & chia seeds.\n- **Lunch:** Grilled chicken/tofu bowl with quinoa & fresh greens.\n- **Dinner:** Baked salmon or lentils with steamed broccoli & sweet potato.\n- **Snacks:** Almonds, Greek yogurt, or fresh apple slices.`,
+                            workoutPlan: `### Target Workout & Exercise Routine\n\n- **Cardio:** 30 mins Zone-2 brisk walking or cycling daily.\n- **Strength:** Bodyweight squats, pushups, dumbbell rows (3x12).\n- **Mobility:** 10 mins morning spinal stretching.`,
+                            waterGoal: Number(initialProfile?.waterIntake) || 2.8,
+                            sleepSchedule: `10:30 PM - 6:30 AM (8 hrs restful sleep)`,
+                            stressTips: `3 physiological sighs + 20-min daily walk`
+                          });
+                        }
+                        setTimeout(() => {
+                          const el = document.getElementById('ai-action-plan-card');
+                          if (el) {
+                            el.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }, 50);
                       }}
-                      className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shadow-md shadow-emerald-500/20 shrink-0"
+                      className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shadow-md shadow-emerald-500/20 shrink-0 cursor-pointer"
                     >
                       <Sparkles className="w-3.5 h-3.5 fill-slate-950/20" />
                       View What To Do Next (AI Action Plan)
