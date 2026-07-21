@@ -60,6 +60,16 @@ export default function App() {
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  // Safe JSON parser to handle non-JSON responses gracefully
+  const parseSafeJson = async (res: Response) => {
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await res.text();
+      throw new Error(`Server returned non-JSON response (${res.status}): ${text.substring(0, 100)}...`);
+    }
+    return await res.json();
+  };
+
   // Fetch notifications
   const fetchNotifications = async (activeToken: string) => {
     setIsFetchingNotifications(true);
@@ -69,7 +79,7 @@ export default function App() {
           'Authorization': `Bearer ${activeToken}`
         }
       });
-      const data = await res.json();
+      const data = await parseSafeJson(res);
       if (data.success) {
         setNotifications(data.notifications || []);
       }
@@ -89,7 +99,7 @@ export default function App() {
           'Authorization': `Bearer ${activeToken}`
         }
       });
-      const data = await res.json();
+      const data = await parseSafeJson(res);
       if (data.success) {
         setReports(data.reports || []);
       }
@@ -112,7 +122,7 @@ export default function App() {
           'Authorization': `Bearer ${token}`
         }
       });
-      const data = await res.json();
+      const data = await parseSafeJson(res);
       if (data.success) {
         setReportSuccess('Weekly Report compiled successfully!');
         fetchReports(token);
@@ -138,7 +148,7 @@ export default function App() {
           'Authorization': `Bearer ${activeToken}`
         }
       });
-      const data = await res.json();
+      const data = await parseSafeJson(res);
       if (data.success) {
         setAdminUsers(data.users || []);
       } else {
@@ -161,7 +171,7 @@ export default function App() {
           'Authorization': `Bearer ${activeToken}`
         }
       });
-      const data = await res.json();
+      const data = await parseSafeJson(res);
       if (data.success) {
         setAdminStats(data.stats || null);
       } else {
@@ -184,7 +194,7 @@ export default function App() {
           'Authorization': `Bearer ${activeToken}`
         }
       });
-      const data = await res.json();
+      const data = await parseSafeJson(res);
       if (data.success) {
         setAdminReports(data.reports || []);
       } else {
@@ -211,7 +221,7 @@ export default function App() {
           'Authorization': `Bearer ${activeToken}`
         }
       });
-      const data = await res.json();
+      const data = await parseSafeJson(res);
       if (data.success) {
         setChatMessages(data.history || []);
       }
@@ -227,7 +237,7 @@ export default function App() {
           'Authorization': `Bearer ${activeToken}`
         }
       });
-      const data = await res.json();
+      const data = await parseSafeJson(res);
       if (data.success) {
         setHealthLogs(data.logs || []);
       }
@@ -262,7 +272,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-      const data = await res.json();
+      const data = await parseSafeJson(res);
       if (!data.success) {
         setAuthError(data.error || 'Authentication failed.');
         return;
@@ -316,9 +326,12 @@ export default function App() {
         },
         body: JSON.stringify({ message: userMsg })
       });
-      const data = await res.json();
+      const data = await parseSafeJson(res);
       if (data.success) {
-        // Fetch fresh chat history to keep in perfect sync with backend state
+        const botReply = data.reply || data.response || data.message;
+        if (botReply) {
+          setChatMessages(prev => [...prev, { role: 'assistant', content: botReply, createdAt: new Date() }]);
+        }
         await fetchChatHistory(token);
       } else {
         setChatError(data.error || 'Failed to get a response from the AI.');
