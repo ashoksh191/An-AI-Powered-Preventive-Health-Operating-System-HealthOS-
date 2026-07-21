@@ -34,9 +34,19 @@ export default function App() {
   const [adminError, setAdminError] = useState('');
   
   // Auth state
-  const [isAuthenticated, setIsAuthenticated] = useState(true); 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [authError, setAuthError] = useState('');
   const [authSuccess, setAuthSuccess] = useState('');
+  
+  // Registration Profile Vitals State
+  const [regAge, setRegAge] = useState<number>(35);
+  const [regGender, setRegGender] = useState<string>('Male');
+  const [regHeight, setRegHeight] = useState<number>(175);
+  const [regWeight, setRegWeight] = useState<number>(75);
+  const [regSleep, setRegSleep] = useState<number>(7.5);
+  const [regExercise, setRegExercise] = useState<number>(30);
+  const [regStress, setRegStress] = useState<string>('Medium');
   
   // Chat state
   const [chatMessages, setChatMessages] = useState<any[]>([]);
@@ -316,26 +326,36 @@ export default function App() {
     setAuthSuccess('');
     try {
       const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
+      const payload = mode === 'login'
+        ? { email, password }
+        : { email, password, age: regAge, gender: regGender, height: regHeight, weight: regWeight, sleep: regSleep, exercise: regExercise, stress: regStress };
+
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify(payload)
       });
       const data = await parseSafeJson(res);
       if (!data.success) {
         setAuthError(data.error || 'Authentication failed.');
         return;
       }
+
+      if (mode === 'register') {
+        setAuthSuccess(data.message || 'Account created & Health Assessment details saved! Please Sign In below.');
+        setAuthMode('login');
+        return;
+      }
       
       if (data.session?.access_token) {
         setToken(data.session.access_token);
         setIsAuthenticated(true);
-        setAuthSuccess(`Authenticated successfully as ${email}!`);
-      } else if (data.user?.id || mode === 'register') {
-        const activeToken = `dev-token-${data.user?.id || 'new-user'}`;
+        setAuthSuccess(`Signed in successfully as ${email}!`);
+      } else {
+        const activeToken = `dev-token-${data.user?.id || 'active'}`;
         setToken(activeToken);
         setIsAuthenticated(true);
-        setAuthSuccess(`Registered & Authenticated successfully as ${email}!`);
+        setAuthSuccess(`Signed in successfully as ${email}!`);
       }
     } catch (err: any) {
       setAuthError(err.message || 'An unexpected error occurred during auth.');
@@ -505,77 +525,212 @@ export default function App() {
 
         {/* Auth Panel when not logged in */}
         {!isAuthenticated && (
-          <div className="max-w-md w-full mx-auto my-auto bg-slate-950 border border-slate-800/80 p-6 rounded-xl flex flex-col gap-4 shadow-xl z-10">
+          <div className="max-w-lg w-full mx-auto my-auto bg-slate-950 border border-slate-800/80 p-6 rounded-2xl flex flex-col gap-5 shadow-2xl z-10 my-8">
             <div className="text-center space-y-1">
-              <Key className="w-8 h-8 text-indigo-400 mx-auto" />
-              <h2 className="text-lg font-bold">Sign In or Create Account</h2>
-              <p className="text-xs text-slate-400">Access protected AI Health Chat endpoints</p>
+              <div className="p-3 bg-indigo-600/20 border border-indigo-500/30 rounded-2xl w-12 h-12 flex items-center justify-center mx-auto text-indigo-400">
+                <Key className="w-6 h-6" />
+              </div>
+              <h2 className="text-lg font-bold text-white tracking-tight">
+                {authMode === 'login' ? 'Sign In to HealthOS' : 'Create Account & Enter Details'}
+              </h2>
+              <p className="text-xs text-slate-400">
+                {authMode === 'login' 
+                  ? 'Enter your registered email and password to access your Health Workspace' 
+                  : 'Enter your credentials and complete your initial Health Assessment to register'}
+              </p>
+            </div>
+
+            {/* Auth Mode Selector Tabs */}
+            <div className="grid grid-cols-2 p-1 bg-slate-900 border border-slate-800 rounded-xl">
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('login');
+                  setAuthError('');
+                  setAuthSuccess('');
+                }}
+                className={`py-2 rounded-lg text-xs font-bold transition-all ${
+                  authMode === 'login'
+                    ? 'bg-indigo-600 text-white shadow-md'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('register');
+                  setAuthError('');
+                  setAuthSuccess('');
+                }}
+                className={`py-2 rounded-lg text-xs font-bold transition-all ${
+                  authMode === 'register'
+                    ? 'bg-indigo-600 text-white shadow-md'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Create Account (Register)
+              </button>
             </div>
 
             {authError && (
-              <div className="flex items-start gap-2 p-3 bg-rose-950/40 border border-rose-900/60 text-rose-300 rounded-lg text-xs leading-relaxed">
+              <div className="flex items-start gap-2 p-3 bg-rose-950/40 border border-rose-900/60 text-rose-300 rounded-xl text-xs leading-relaxed">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{authError}</span>
               </div>
             )}
 
             {authSuccess && (
-              <div className="flex items-start gap-2 p-3 bg-emerald-950/40 border border-emerald-900/60 text-emerald-300 rounded-lg text-xs leading-relaxed">
+              <div className="flex items-start gap-2 p-3 bg-emerald-950/40 border border-emerald-900/60 text-emerald-300 rounded-xl text-xs leading-relaxed">
                 <CheckCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{authSuccess}</span>
               </div>
             )}
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
-                <label className="block text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Email Address</label>
+                <label className="block text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">Email Address</label>
                 <input 
                   type="email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500/60"
-                  placeholder="name@domain.com"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs font-mono text-slate-100 focus:outline-none focus:border-indigo-500"
+                  placeholder="doctor@hospital.com or patient@domain.com"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Password</label>
+                <label className="block text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">Password</label>
                 <input 
                   type="password" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500/60"
-                  placeholder="Min. 6 characters"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs font-mono text-slate-100 focus:outline-none focus:border-indigo-500"
+                  placeholder="Minimum 6 characters"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <button 
-                  onClick={() => handleAuth('login')}
-                  className="bg-indigo-600 hover:bg-indigo-500 transition-colors text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1"
-                >
-                  Sign In
-                </button>
-                <button 
-                  onClick={() => handleAuth('register')}
-                  className="bg-slate-800 hover:bg-slate-700 transition-colors text-slate-200 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1"
-                >
-                  Register
-                </button>
-              </div>
+              {/* Onboarding Health Assessment Vitals (Only visible when Registering) */}
+              {authMode === 'register' && (
+                <div className="space-y-3 pt-3 border-t border-slate-850">
+                  <div className="flex items-center gap-2 text-indigo-400 text-xs font-bold uppercase tracking-wider">
+                    <Heart className="w-3.5 h-3.5" />
+                    <span>Health Assessment Details (Required for Onboarding)</span>
+                  </div>
 
-              <div className="relative flex py-2 items-center">
-                <div className="flex-grow border-t border-slate-800/80"></div>
-                <span className="flex-shrink mx-3 text-[10px] text-slate-500 font-mono uppercase">Or Developer Bypass</span>
-                <div className="flex-grow border-t border-slate-800/80"></div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-1">Age (years)</label>
+                      <input 
+                        type="number" 
+                        value={regAge} 
+                        onChange={(e) => setRegAge(Number(e.target.value))} 
+                        className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-indigo-500" 
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-1">Gender</label>
+                      <select 
+                        value={regGender} 
+                        onChange={(e) => setRegGender(e.target.value)} 
+                        className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-indigo-500"
+                      >
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-1">Height (cm)</label>
+                      <input 
+                        type="number" 
+                        value={regHeight} 
+                        onChange={(e) => setRegHeight(Number(e.target.value))} 
+                        className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-indigo-500" 
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-2">
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-1">Weight (kg)</label>
+                      <input 
+                        type="number" 
+                        value={regWeight} 
+                        onChange={(e) => setRegWeight(Number(e.target.value))} 
+                        className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-indigo-500" 
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-1">Sleep (hrs)</label>
+                      <input 
+                        type="number" 
+                        step="0.5"
+                        value={regSleep} 
+                        onChange={(e) => setRegSleep(Number(e.target.value))} 
+                        className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-indigo-500" 
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-1">Exercise (m)</label>
+                      <input 
+                        type="number" 
+                        value={regExercise} 
+                        onChange={(e) => setRegExercise(Number(e.target.value))} 
+                        className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-indigo-500" 
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold text-slate-400 block mb-1">Stress</label>
+                      <select 
+                        value={regStress} 
+                        onChange={(e) => setRegStress(e.target.value)} 
+                        className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-indigo-500"
+                      >
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Submit Buttons */}
+              {authMode === 'login' ? (
+                <button 
+                  type="button"
+                  onClick={() => handleAuth('login')}
+                  className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 transition-all text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
+                >
+                  <Key className="w-4 h-4" />
+                  Sign In to HealthOS Workspace
+                </button>
+              ) : (
+                <button 
+                  type="button"
+                  onClick={() => handleAuth('register')}
+                  className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 transition-all text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  Create Account & Save Health Details
+                </button>
+              )}
+
+              <div className="relative flex py-1 items-center">
+                <div className="flex-grow border-t border-slate-800"></div>
+                <span className="flex-shrink mx-3 text-[10px] text-slate-500 font-mono uppercase">Developer Session Bypass</span>
+                <div className="flex-grow border-t border-slate-800"></div>
               </div>
 
               <button 
+                type="button"
                 onClick={handleUseDevToken}
-                className="w-full bg-slate-900 hover:bg-slate-800 border border-indigo-950 text-indigo-300 hover:text-indigo-200 transition-all py-2 rounded-lg text-xs font-semibold font-mono flex items-center justify-center gap-1.5"
+                className="w-full bg-slate-900 hover:bg-slate-800 border border-indigo-950 text-indigo-300 hover:text-indigo-200 transition-all py-2.5 rounded-xl text-xs font-semibold font-mono flex items-center justify-center gap-1.5"
               >
                 <Shield className="w-3.5 h-3.5 text-indigo-400" />
-                Initialize Sandbox Session (dev-token-123)
+                Initialize Instant Developer Session
               </button>
             </div>
           </div>

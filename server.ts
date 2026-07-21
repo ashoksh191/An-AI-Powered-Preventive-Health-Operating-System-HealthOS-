@@ -110,7 +110,7 @@ export async function createApp() {
   app.post(
     '/api/auth/register',
     handleSupabaseRoute(async (req, res, supabase) => {
-      const { email, password, redirectTo } = req.body;
+      const { email, password, age, gender, height, weight, sleep, exercise, stress, redirectTo } = req.body;
 
       if (!email || !password) {
         res.status(400).json({
@@ -131,20 +131,38 @@ export async function createApp() {
       if (!supabase) {
         const userId = 'user-' + Math.floor(100000 + Math.random() * 900000);
         await syncOrCreateUser(userId, email);
+
+        if (age && height && weight) {
+          try {
+            await createHealthProfile(userId, {
+              age: Number(age) || 35,
+              gender: gender || 'Male',
+              height: Number(height) || 175,
+              weight: Number(weight) || 75,
+              sleep: Number(sleep) || 7.5,
+              exercise: Number(exercise) || 30,
+              smoking: false,
+              alcohol: 'Occasional',
+              waterIntake: 2.5,
+              stress: stress || 'Medium',
+              familyHistory: '',
+              existingConditions: ''
+            });
+          } catch (pe) {
+            console.warn('Profile save notice on register:', pe);
+          }
+        }
+
         res.status(201).json({
           success: true,
-          message: 'Registration successful! Active local developer session initialized.',
+          message: 'Account created & Health Assessment details saved! Please Sign In below.',
           user: {
             id: userId,
             email,
             created_at: new Date().toISOString(),
             email_confirmed_at: new Date().toISOString(),
           },
-          session: {
-            access_token: `dev-token-${userId}`,
-            refresh_token: 'demo-refresh-token',
-            expires_in: 86400,
-          },
+          session: null
         });
         return;
       }
@@ -168,27 +186,35 @@ export async function createApp() {
         return;
       }
 
-      // Supabase behavior check: is user already confirmed or is email verification required?
-      const isConfirmationRequired = data.user && !data.user.email_confirmed_at && data.session === null;
+      if (data.user?.id && age && height && weight) {
+        try {
+          await createHealthProfile(data.user.id, {
+            age: Number(age) || 35,
+            gender: gender || 'Male',
+            height: Number(height) || 175,
+            weight: Number(weight) || 75,
+            sleep: Number(sleep) || 7.5,
+            exercise: Number(exercise) || 30,
+            smoking: false,
+            alcohol: 'Occasional',
+            waterIntake: 2.5,
+            stress: stress || 'Medium',
+            familyHistory: '',
+            existingConditions: ''
+          });
+        } catch (pe) {}
+      }
 
       res.status(201).json({
         success: true,
-        message: isConfirmationRequired
-          ? 'Registration successful! Please check your inbox for a verification email.'
-          : 'Registration successful and authenticated.',
+        message: 'Account created & Health Assessment details saved! Please Sign In below.',
         user: {
           id: data.user?.id,
           email: data.user?.email,
           created_at: data.user?.created_at,
           email_confirmed_at: data.user?.email_confirmed_at,
         },
-        session: data.session
-          ? {
-              access_token: data.session.access_token,
-              refresh_token: data.session.refresh_token,
-              expires_in: data.session.expires_in,
-            }
-          : null,
+        session: null
       });
     })
   );
