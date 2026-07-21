@@ -421,37 +421,37 @@ export default function ProfileForm({ initialProfile, onSubmit, isLoading }: Pro
 
       {/* Button Controls */}
       <div className="flex items-center gap-3 mt-6 border-t border-slate-800 pt-5">
-        {activeTab !== 'history' ? (
+        {activeTab !== 'history' && (
           <button
             type="button"
             onClick={() => {
               if (activeTab === 'physical') setActiveTab('lifestyle');
               else if (activeTab === 'lifestyle') setActiveTab('history');
             }}
-            className="flex-1 py-2.5 px-4 bg-slate-800 text-white rounded-xl text-xs font-semibold hover:bg-slate-750 transition-all flex items-center justify-center gap-1"
+            className="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1 shrink-0"
           >
-            Continue Form
+            Next Section
             <ChevronRight className="w-4 h-4" />
           </button>
-        ) : (
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="flex-1 py-2.5 px-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 rounded-xl text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10"
-          >
-            {isLoading ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                Calculating Metrics...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 fill-slate-950/20 text-slate-950" />
-                Update Profile & Analyze
-              </>
-            )}
-          </button>
         )}
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="flex-1 py-2.5 px-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 rounded-xl text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10 cursor-pointer"
+        >
+          {isLoading ? (
+            <>
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              Saving Profile & Recalculating Risks...
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4 fill-slate-950/20 text-slate-950" />
+              Save & Update Health Profile
+            </>
+          )}
+        </button>
       </div>
     </form>
   );
