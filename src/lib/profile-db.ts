@@ -423,33 +423,31 @@ export async function createHealthProfile(userId: string, data: {
 
   if (prisma) {
     try {
-      return await prisma.healthProfile.create({
-        data: {
+      return await prisma.healthProfile.upsert({
+        where: { userId },
+        create: {
           userId,
           ...data,
           bmi: bmiValue,
         },
+        update: {
+          ...data,
+          bmi: bmiValue,
+        }
       });
     } catch (err: any) {
-      console.error('Prisma Error in createHealthProfile:', err);
-      if (err.code === 'P2002') {
-        throw new Error('A health profile already exists for this user. Use PATCH or PUT to update instead.');
-      }
-      console.warn("Prisma query failed, falling back to in-memory database:", err);
+      console.warn("Prisma query failed in createHealthProfile, using in-memory:", err);
     }
   }
 
-  // In-Memory fallback
-  if (inMemoryProfiles.has(userId)) {
-    throw new Error('A health profile already exists for this user. Use PATCH or PUT to update instead.');
-  }
-
+  // In-Memory fallback: Upsert (update if exists, otherwise create)
+  const existing = inMemoryProfiles.get(userId);
   const newProfile: InMemHealthProfile = {
-    id: profileIdCounter++,
+    id: existing ? existing.id : profileIdCounter++,
     userId,
     ...data,
     bmi: bmiValue,
-    createdAt: new Date(),
+    createdAt: existing ? existing.createdAt : new Date(),
     updatedAt: new Date(),
   };
 

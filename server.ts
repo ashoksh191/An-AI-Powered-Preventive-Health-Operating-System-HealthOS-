@@ -578,7 +578,7 @@ export async function createApp() {
         return;
       }
 
-      const created = await createHealthProfile(userId, {
+      const profilePayload = {
         age: Number(age),
         gender: gender.trim(),
         height: Number(height),
@@ -591,18 +591,25 @@ export async function createApp() {
         stress: stress.trim(),
         familyHistory: familyHistory.trim(),
         existingConditions: existingConditions.trim(),
-      });
+      };
 
-      res.status(201).json({
+      let created;
+      try {
+        created = await createHealthProfile(userId, profilePayload);
+      } catch (err: any) {
+        created = await updateHealthProfile(userId, profilePayload);
+      }
+
+      res.status(200).json({
         success: true,
-        message: 'Health profile created successfully.',
+        message: 'Health profile saved successfully.',
         profile: created,
       });
     } catch (err: any) {
-      console.error('Error creating profile:', err);
-      res.status(400).json({
+      console.error('Error saving profile:', err);
+      res.status(500).json({
         success: false,
-        error: err.message || 'Failed to create health profile.',
+        error: err.message || 'Failed to save health profile.',
       });
     }
   });
