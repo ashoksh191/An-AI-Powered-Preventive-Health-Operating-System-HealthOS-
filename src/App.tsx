@@ -454,7 +454,17 @@ export default function App() {
             <VoiceNavigation 
               onNavigateTab={setActiveTab} 
               onLogout={handleLogout} 
-              onBypass={handleUseDevToken} 
+              onBypass={handleUseDevToken}
+              onUpdateField={(field, val) => {
+                setInitialProfile((prev: any) => ({ ...(prev || {}), [field]: val }));
+              }}
+              onSaveProfile={() => {
+                if (initialProfile) handleProfileSubmit(initialProfile);
+              }}
+              onSendChat={(msg) => {
+                setNewMessage(msg);
+                handleSendChat(msg);
+              }}
             />
 
             {isAuthenticated ? (

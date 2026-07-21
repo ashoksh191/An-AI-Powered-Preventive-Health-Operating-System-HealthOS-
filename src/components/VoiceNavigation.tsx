@@ -5,12 +5,15 @@ interface VoiceNavigationProps {
   onNavigateTab: (tab: 'assessment' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints') => void;
   onLogout?: () => void;
   onBypass?: () => void;
+  onUpdateField?: (field: string, value: any) => void;
+  onSaveProfile?: () => void;
+  onSendChat?: (message: string) => void;
 }
 
-export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass }: VoiceNavigationProps) {
+export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onUpdateField, onSaveProfile, onSendChat }: VoiceNavigationProps) {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
-  const [feedback, setFeedback] = useState<string>('Click mic and say "Go to Assessment" or "Open Chat"');
+  const [feedback, setFeedback] = useState<string>('Click mic and say "Set weight 75" or "Go to Assessment"');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showCommandsModal, setShowCommandsModal] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -63,6 +66,93 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass }: V
   };
 
   const processVoiceCommand = (cmd: string) => {
+    // 1. Voice Editing: Weight (e.g., "set weight 75" or "weight 75")
+    const weightMatch = cmd.match(/(?:set weight|weight is|my weight|weight)\s*(?:to|is)?\s*(\d+(?:\.\d+)?)/);
+    if (weightMatch && !cmd.includes('go to')) {
+      const val = parseFloat(weightMatch[1]);
+      if (onUpdateField) onUpdateField('weight', val);
+      onNavigateTab('assessment');
+      const msg = `Updated weight to ${val} kg`;
+      setFeedback(msg);
+      speakFeedback(msg);
+      stopListening();
+      return;
+    }
+
+    // 2. Voice Editing: Height (e.g., "set height 180" or "height 180")
+    const heightMatch = cmd.match(/(?:set height|height is|my height|height)\s*(?:to|is)?\s*(\d+(?:\.\d+)?)/);
+    if (heightMatch && !cmd.includes('go to')) {
+      const val = parseFloat(heightMatch[1]);
+      if (onUpdateField) onUpdateField('height', val);
+      onNavigateTab('assessment');
+      const msg = `Updated height to ${val} cm`;
+      setFeedback(msg);
+      speakFeedback(msg);
+      stopListening();
+      return;
+    }
+
+    // 3. Voice Editing: Age (e.g., "set age 30" or "i am 30 years old")
+    const ageMatch = cmd.match(/(?:set age|age is|i am)\s*(?:to|is)?\s*(\d+)/);
+    if (ageMatch && !cmd.includes('go to')) {
+      const val = parseInt(ageMatch[1]);
+      if (onUpdateField) onUpdateField('age', val);
+      onNavigateTab('assessment');
+      const msg = `Updated age to ${val} years`;
+      setFeedback(msg);
+      speakFeedback(msg);
+      stopListening();
+      return;
+    }
+
+    // 4. Voice Editing: Sleep (e.g., "set sleep 8" or "sleep 8 hours")
+    const sleepMatch = cmd.match(/(?:set sleep|sleep is)\s*(?:to|is)?\s*(\d+(?:\.\d+)?)/);
+    if (sleepMatch && !cmd.includes('go to')) {
+      const val = parseFloat(sleepMatch[1]);
+      if (onUpdateField) onUpdateField('sleep', val);
+      onNavigateTab('assessment');
+      const msg = `Updated sleep to ${val} hours`;
+      setFeedback(msg);
+      speakFeedback(msg);
+      stopListening();
+      return;
+    }
+
+    // 5. Voice Editing: Exercise (e.g., "set exercise 45" or "exercise 45 mins")
+    const exerciseMatch = cmd.match(/(?:set exercise|exercise is)\s*(?:to|is)?\s*(\d+)/);
+    if (exerciseMatch && !cmd.includes('go to')) {
+      const val = parseInt(exerciseMatch[1]);
+      if (onUpdateField) onUpdateField('exercise', val);
+      onNavigateTab('assessment');
+      const msg = `Updated exercise to ${val} minutes`;
+      setFeedback(msg);
+      speakFeedback(msg);
+      stopListening();
+      return;
+    }
+
+    // 6. Voice Action: Save Profile ("save profile", "update profile", "सेव करो")
+    if (cmd.includes('save profile') || cmd.includes('update profile') || cmd.includes('submit form') || cmd.includes('सेव करो')) {
+      if (onSaveProfile) onSaveProfile();
+      const msg = 'Saving and updating health profile';
+      setFeedback(msg);
+      speakFeedback(msg);
+      stopListening();
+      return;
+    }
+
+    // 7. Voice Action: Ask AI Chatbot ("ask AI what should I eat for dinner")
+    const chatMatch = cmd.match(/(?:ask ai|ask assistant|chat)\s+(.+)/);
+    if (chatMatch) {
+      const query = chatMatch[1];
+      onNavigateTab('chat');
+      if (onSendChat) onSendChat(query);
+      const msg = `Asking AI Chatbot: ${query}`;
+      setFeedback(msg);
+      speakFeedback(msg);
+      stopListening();
+      return;
+    }
     if (cmd.includes('assessment') || cmd.includes('profile') || cmd.includes('vitals') || cmd.includes('असेसमेंट') || cmd.includes('प्रोफाइल')) {
       onNavigateTab('assessment');
       const msg = 'Navigating to Health Assessment';
