@@ -28,6 +28,57 @@ export function getPrismaClient(): PrismaClient | null {
   return prismaInstance;
 }
 
+export function calculateBiologicalAge(profile: any) {
+  if (!profile) return { chronoAge: 35, bioAge: 30.5, delta: -4.5, lifeExpectancyImpact: '+4.5 Yrs', category: 'Biologically Younger 🌟' };
+  
+  let baseAge = Number(profile.age) || 35;
+  let bioAge = baseAge;
+
+  // BMI adjustment
+  const bmi = Number(profile.bmi) || 24;
+  if (bmi >= 18.5 && bmi <= 24.9) bioAge -= 2.2;
+  else if (bmi >= 25 && bmi <= 29.9) bioAge += 1.8;
+  else if (bmi >= 30) bioAge += 4.5;
+
+  // Exercise adjustment
+  const exercise = Number(profile.exercise) || 30;
+  if (exercise >= 45) bioAge -= 3.5;
+  else if (exercise >= 20) bioAge -= 1.5;
+  else if (exercise === 0) bioAge += 2.5;
+
+  // Sleep adjustment
+  const sleep = Number(profile.sleep) || 7;
+  if (sleep >= 7 && sleep <= 8.5) bioAge -= 2.0;
+  else if (sleep < 6) bioAge += 3.0;
+
+  // Smoking adjustment
+  if (profile.smoking) bioAge += 5.5;
+
+  // Stress adjustment
+  if (profile.stress === 'High') bioAge += 2.5;
+  else if (profile.stress === 'Low') bioAge -= 1.5;
+
+  // Water intake
+  if (Number(profile.waterIntake || 2.0) >= 2.8) bioAge -= 1.0;
+
+  const delta = Number((bioAge - baseAge).toFixed(1));
+  const roundedBioAge = Number(bioAge.toFixed(1));
+  const impactYears = (-delta).toFixed(1);
+  const lifeExpectancyImpact = delta <= 0 ? `+${impactYears} Yrs` : `${impactYears} Yrs`;
+  
+  let category = 'Biologically Younger 🌟';
+  if (delta > 2) category = 'Accelerated Aging Risk ⚠️';
+  else if (delta > 0) category = 'Slightly Elevated 🟡';
+
+  return {
+    chronoAge: baseAge,
+    bioAge: roundedBioAge,
+    delta,
+    lifeExpectancyImpact,
+    category
+  };
+}
+
 // ========================================================
 // IN-MEMORY DATABASE FALLBACK LAYER
 // ========================================================

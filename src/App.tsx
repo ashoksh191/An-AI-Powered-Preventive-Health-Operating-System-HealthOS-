@@ -3,20 +3,22 @@ import {
   Server, Shield, CheckCircle, Terminal, Heart, Sparkles, Key, 
   Activity, LayoutDashboard, Send, User, MessageSquare, Plus, 
   RefreshCw, LogOut, Smile, Droplets, ArrowRight, UserCheck, AlertCircle,
-  Bell, FileText, ShieldAlert, Users, BarChart3, Stethoscope, Layers, Volume2, VolumeX, Globe, Mic, MicOff, Download
+  Bell, FileText, ShieldAlert, Users, BarChart3, Stethoscope, Layers, Volume2, VolumeX, Globe, Mic, MicOff, Download,
+  Camera, Upload, Flame, Siren, Dna, Award, Zap, Clock
 } from 'lucide-react';
 import ProfileForm from './components/ProfileForm';
 import VoiceNavigation from './components/VoiceNavigation';
 import PhysicianCopilot from './components/PhysicianCopilot';
 import RadiologySummarizer from './components/RadiologySummarizer';
+import { calculateBiologicalAge } from './lib/profile-db';
 
 export default function App() {
   const [token, setToken] = useState('dev-token-123');
   const [email, setEmail] = useState('asharofficial10@gmail.com');
   const [password, setPassword] = useState('password123');
   
-  // Tab/Panel selector: 'assessment' | 'copilot' | 'radiology' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints'
-  const [activeTab, setActiveTab] = useState<'assessment' | 'copilot' | 'radiology' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints'>('copilot');
+  // Tab/Panel selector
+  const [activeTab, setActiveTab] = useState<'assessment' | 'copilot' | 'radiology' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints' | 'vision' | 'lab'>('copilot');
   
   // Profile Assessment state
   const [initialProfile, setInitialProfile] = useState<any>(null);
@@ -92,6 +94,70 @@ export default function App() {
       const cleanLine = line.replace(/^[-*•]\s*/, '').replace(/\*\*/g, '');
       return { id: idx, raw: line, clean: cleanLine };
     });
+  };
+
+  // Hackathon Winning Features State
+  const [isSosOpen, setIsSosOpen] = useState(false);
+  const [sosSymptom, setSosSymptom] = useState('Chest Pain / Sudden Breathlessness');
+  
+  const [mealPhotoText, setMealPhotoText] = useState('');
+  const [mealPhotoBase64, setMealPhotoBase64] = useState<string | null>(null);
+  const [isAnalyzingMeal, setIsAnalyzingMeal] = useState(false);
+  const [mealAnalysisResult, setMealAnalysisResult] = useState<any | null>(null);
+
+  const [labReportText, setLabReportText] = useState(`Fasting Blood Sugar: 118 mg/dL\nHbA1c: 5.9%\nTotal Cholesterol: 215 mg/dL\nHDL: 52 mg/dL\nLDL: 142 mg/dL\nTriglycerides: 165 mg/dL\nSerum Creatinine: 0.9 mg/dL\nTSH: 2.4 uIU/mL`);
+  const [isAnalyzingLab, setIsAnalyzingLab] = useState(false);
+  const [labAnalysisResult, setLabAnalysisResult] = useState<any | null>(null);
+
+  const bioAgeData = calculateBiologicalAge(initialProfile);
+
+  const handleAnalyzeMeal = async () => {
+    if (!token) return;
+    setIsAnalyzingMeal(true);
+    try {
+      const res = await fetch('/api/vision/analyze-meal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          imageBase64: mealPhotoBase64,
+          mealDescription: mealPhotoText || 'Balanced Meal Plate (Dal, Roti & Salad)'
+        })
+      });
+      const data = await parseSafeJson(res);
+      if (data.success && data.analysis) {
+        setMealAnalysisResult(data.analysis);
+      }
+    } catch (e) {
+      console.warn('Vision Meal analysis failed:', e);
+    } finally {
+      setIsAnalyzingMeal(false);
+    }
+  };
+
+  const handleAnalyzeLab = async () => {
+    if (!token) return;
+    setIsAnalyzingLab(true);
+    try {
+      const res = await fetch('/api/lab/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ labText: labReportText })
+      });
+      const data = await parseSafeJson(res);
+      if (data.success && data.analysis) {
+        setLabAnalysisResult(data.analysis);
+      }
+    } catch (e) {
+      console.warn('Lab analysis failed:', e);
+    } finally {
+      setIsAnalyzingLab(false);
+    }
   };
 
   // Chat state
@@ -1034,7 +1100,17 @@ export default function App() {
             </div>
 
             {/* Tabs Bar */}
-            <div className="flex items-center gap-2 bg-slate-950/60 border border-slate-800 p-1 rounded-xl self-start flex-wrap">              <button 
+            <div className="flex items-center gap-2 bg-slate-950/60 border border-slate-800 p-1 rounded-xl self-start flex-wrap">
+              <button 
+                onClick={() => setIsSosOpen(true)}
+                className="px-3.5 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-lg shadow-rose-600/30 animate-pulse cursor-pointer"
+                title="Trigger Immediate Paramedic SOS Brief"
+              >
+                <Siren className="w-4 h-4 text-white" />
+                <span>🚨 SOS RED ALERT</span>
+              </button>
+
+              <button 
                 onClick={() => setActiveTab('copilot')}
                 className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${activeTab === 'copilot' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/10 font-bold' : 'text-indigo-300 hover:text-white bg-indigo-950/40 border border-indigo-900/60'}`}
               >
@@ -1048,6 +1124,22 @@ export default function App() {
               >
                 <Layers className="w-3.5 h-3.5 text-teal-400" />
                 Radiology AI
+              </button>
+
+              <button 
+                onClick={() => setActiveTab('vision')}
+                className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${activeTab === 'vision' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/10 font-bold' : 'text-emerald-300 hover:text-white bg-emerald-950/40 border border-emerald-900/60'}`}
+              >
+                <Camera className="w-3.5 h-3.5 text-emerald-400" />
+                Vision AI Meal
+              </button>
+
+              <button 
+                onClick={() => setActiveTab('lab')}
+                className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${activeTab === 'lab' ? 'bg-purple-600 text-white shadow-md shadow-purple-500/10 font-bold' : 'text-purple-300 hover:text-white bg-purple-950/40 border border-purple-900/60'}`}
+              >
+                <Dna className="w-3.5 h-3.5 text-purple-400" />
+                Lab Biomarkers
               </button>
 
               <button 
@@ -1129,9 +1221,212 @@ export default function App() {
               </div>
             )}
 
+            {/* Tab Contents: Vision AI Meal Analyzer */}
+            {activeTab === 'vision' && (
+              <div className="flex-grow flex flex-col gap-4 overflow-y-auto">
+                <div className="bg-slate-950 border border-emerald-900/80 p-6 rounded-2xl space-y-4 shadow-2xl">
+                  <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+                    <div className="p-2.5 bg-emerald-600 rounded-xl text-slate-950 font-bold shadow-lg shadow-emerald-500/20">
+                      <Camera className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white tracking-tight">Vision AI Food & Meal Photo Analyzer</h3>
+                      <p className="text-[11px] text-slate-400">Scan food plate photos or describe your meal to get Instant Calories, Macros & Clinical Suitability</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <label className="text-xs font-semibold text-slate-300">Option 1: Meal Description / Plate Notes</label>
+                      <input 
+                        type="text"
+                        value={mealPhotoText}
+                        onChange={(e) => setMealPhotoText(e.target.value)}
+                        placeholder="e.g. 2 Rotis with Moong Dal, Curd, Cucumber & Paneer Sabzi"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                      />
+
+                      <label className="text-xs font-semibold text-slate-300 block">Option 2: Upload Food Plate Image</label>
+                      <div className="p-4 border-2 border-dashed border-slate-800 rounded-xl text-center cursor-pointer hover:border-emerald-500 transition-all bg-slate-900/50">
+                        <input 
+                          type="file" 
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => setMealPhotoBase64(reader.result as string);
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="hidden"
+                          id="meal-photo-file-input"
+                        />
+                        <label htmlFor="meal-photo-file-input" className="cursor-pointer flex flex-col items-center gap-2">
+                          <Upload className="w-6 h-6 text-emerald-400" />
+                          <span className="text-xs font-semibold text-slate-300">
+                            {mealPhotoBase64 ? '✓ Image Attached' : 'Click to Upload Food Image'}
+                          </span>
+                        </label>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleAnalyzeMeal}
+                        disabled={isAnalyzingMeal}
+                        className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        {isAnalyzingMeal ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                        <span>{isAnalyzingMeal ? 'Analyzing Meal Macros & Clinical Suitability...' : 'Run Vision AI Analysis'}</span>
+                      </button>
+                    </div>
+
+                    {/* Result View */}
+                    {mealAnalysisResult && (
+                      <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                          <h4 className="text-xs font-bold text-white">{mealAnalysisResult.foodName}</h4>
+                          <span className="px-2.5 py-0.5 bg-emerald-950 text-emerald-300 border border-emerald-800 rounded-full text-[10px] font-bold">
+                            {mealAnalysisResult.suitabilityBadge} ({mealAnalysisResult.suitabilityScore}/100)
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-2 text-center font-mono">
+                          <div className="p-2 bg-slate-950 border border-slate-800 rounded">
+                            <span className="text-[10px] text-slate-500 block">Calories</span>
+                            <span className="text-xs font-bold text-emerald-400">{mealAnalysisResult.calories} kcal</span>
+                          </div>
+                          <div className="p-2 bg-slate-950 border border-slate-800 rounded">
+                            <span className="text-[10px] text-slate-500 block">Protein</span>
+                            <span className="text-xs font-bold text-indigo-400">{mealAnalysisResult.proteinGrams}g</span>
+                          </div>
+                          <div className="p-2 bg-slate-950 border border-slate-800 rounded">
+                            <span className="text-[10px] text-slate-500 block">Carbs</span>
+                            <span className="text-xs font-bold text-amber-400">{mealAnalysisResult.carbsGrams}g</span>
+                          </div>
+                          <div className="p-2 bg-slate-950 border border-slate-800 rounded">
+                            <span className="text-[10px] text-slate-500 block">Fats</span>
+                            <span className="text-xs font-bold text-rose-400">{mealAnalysisResult.fatsGrams}g</span>
+                          </div>
+                        </div>
+
+                        <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs space-y-1">
+                          <span className="text-[10px] font-bold uppercase text-slate-400 block">Clinical Verdict & Guidance:</span>
+                          <p className="text-slate-200 text-[11px] leading-relaxed">{mealAnalysisResult.clinicalFeedback}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab Contents: Lab Biomarker Analyzer */}
+            {activeTab === 'lab' && (
+              <div className="flex-grow flex flex-col gap-4 overflow-y-auto">
+                <div className="bg-slate-950 border border-purple-900/80 p-6 rounded-2xl space-y-4 shadow-2xl">
+                  <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+                    <div className="p-2.5 bg-purple-600 rounded-xl text-white font-bold shadow-lg shadow-purple-500/20">
+                      <Dna className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white tracking-tight">Lab Report & Blood Biomarker Clinical Analyzer</h3>
+                      <p className="text-[11px] text-slate-400">Paste Blood Panel or Lab Results (HbA1c, Lipids, Creatinine, TSH) to highlight out-of-range clinical flags</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <label className="text-xs font-semibold text-slate-300">Paste Raw Laboratory Report Text:</label>
+                      <textarea
+                        rows={7}
+                        value={labReportText}
+                        onChange={(e) => setLabReportText(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 font-mono focus:outline-none focus:border-purple-500 leading-relaxed"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={handleAnalyzeLab}
+                        disabled={isAnalyzingLab}
+                        className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-600/20 transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        {isAnalyzingLab ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                        <span>{isAnalyzingLab ? 'Analyzing Blood Panel & Clinical Biomarkers...' : 'Extract & Analyze Biomarkers'}</span>
+                      </button>
+                    </div>
+
+                    {/* Lab Analysis Result */}
+                    {labAnalysisResult && (
+                      <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                          <h4 className="text-xs font-bold text-purple-300">{labAnalysisResult.overallStatus}</h4>
+                        </div>
+
+                        <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                          {labAnalysisResult.biomarkers?.map((bm: any, idx: number) => (
+                            <div key={idx} className="p-2.5 bg-slate-950 border border-slate-800/80 rounded-lg flex items-center justify-between gap-2 text-xs">
+                              <div>
+                                <span className="font-semibold text-white block text-[11px]">{bm.name}</span>
+                                <span className="text-[10px] text-slate-400">{bm.clinicalNotes}</span>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <span className="font-mono font-bold text-xs block text-slate-200">{bm.value}</span>
+                                <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
+                                  bm.status === 'High' ? 'bg-rose-950 text-rose-300 border border-rose-800' :
+                                  bm.status === 'Borderline' ? 'bg-amber-950 text-amber-300 border border-amber-800' :
+                                  'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                                }`}>
+                                  {bm.status}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Tab Contents: Health Assessment Form */}
             {activeTab === 'assessment' && (
               <div className="flex-grow flex flex-col gap-4 overflow-y-auto">
+                {/* Biological Age & Longevity Clock Card */}
+                <div className="bg-gradient-to-r from-indigo-950/80 via-purple-950/60 to-slate-950 border border-purple-800/60 p-4 rounded-2xl flex items-center justify-between gap-4 shadow-xl flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-purple-600 text-white rounded-xl shadow-lg shadow-purple-600/30">
+                      <Clock className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-mono text-purple-300 uppercase font-bold tracking-wider block">AI Longevity Clock Engine</span>
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <span>Biological Age: <strong className="text-purple-300 text-base">{bioAgeData.bioAge} Yrs</strong></span>
+                        <span className="text-xs font-mono text-slate-400">(Chronological: {bioAgeData.chronoAge} Yrs)</span>
+                      </h3>
+                      <p className="text-[11px] text-slate-300">{bioAgeData.category} • Life Expectancy Impact: <strong className="text-emerald-400">{bioAgeData.lifeExpectancyImpact}</strong></p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-center">
+                      <span className="text-[9px] text-slate-500 font-mono block">STREAK</span>
+                      <span className="text-xs font-bold text-amber-400 flex items-center gap-1">
+                        <Flame className="w-3.5 h-3.5 fill-amber-400" />
+                        7 Days
+                      </span>
+                    </div>
+                    <div className="px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-center">
+                      <span className="text-[9px] text-slate-500 font-mono block">BADGES</span>
+                      <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
+                        <Award className="w-3.5 h-3.5" />
+                        4 Unlocked
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 {profileSaveSuccess && (
                   <div className="p-4 bg-emerald-950/80 border border-emerald-800/80 text-emerald-300 rounded-2xl text-xs flex items-center justify-between gap-3 shadow-xl">
                     <div className="flex items-center gap-2 font-bold">
@@ -2436,6 +2731,67 @@ export default function App() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Emergency SOS Modal */}
+        {isSosOpen && (
+          <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-slate-950 border-2 border-rose-600 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative">
+              <div className="flex items-center justify-between border-b border-rose-900/60 pb-3">
+                <div className="flex items-center gap-2.5 text-rose-500 font-bold text-sm">
+                  <Siren className="w-5 h-5 animate-pulse" />
+                  <span>EMERGENCY MEDICAL SOS TRIAGE DISPATCH</span>
+                </div>
+                <button onClick={() => setIsSosOpen(false)} className="text-slate-400 hover:text-white font-bold text-sm">✕</button>
+              </div>
+
+              <div className="p-3 bg-rose-950/60 border border-rose-800 text-rose-200 rounded-xl text-xs space-y-1">
+                <span className="font-bold flex items-center gap-1 text-rose-400">🚨 Critical Safety Warning:</span>
+                <p>If you or someone around you is experiencing severe chest pain, facial drooping, or sudden extreme shortness of breath, <strong>CALL 102 / 108 / 911 IMMEDIATELY!</strong></p>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <span className="font-bold text-slate-300 block">Select Primary Emergency Symptom:</span>
+                <select 
+                  value={sosSymptom} 
+                  onChange={(e) => setSosSymptom(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+                >
+                  <option value="Chest Pain / Pressure">Severe Chest Pain / Pressure Radiating to Arm</option>
+                  <option value="Stroke FAST Symptoms">Stroke Symptoms (Facial Droop, Arm Weakness, Slurred Speech)</option>
+                  <option value="Severe Anaphylaxis">Severe Allergic Reaction / Swollen Airway</option>
+                  <option value="Uncontrolled High Fever">Uncontrolled High Fever (&gt; 103°F / 39.4°C) with Chills</option>
+                </select>
+
+                <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-2 font-mono text-[11px]">
+                  <span className="text-indigo-400 font-bold block uppercase text-[10px]">Instant Paramedic Medical Brief:</span>
+                  <p className="text-slate-200"><strong>Patient Name:</strong> Ashar Official</p>
+                  <p className="text-slate-200"><strong>Age & Gender:</strong> {initialProfile?.age || 35} Yrs | {initialProfile?.gender || 'Male'}</p>
+                  <p className="text-slate-200"><strong>BMI / Vitals:</strong> BMI {(initialProfile?.bmi || 24.5).toFixed(1)} | Sleep {initialProfile?.sleep || 7.5} hrs</p>
+                  <p className="text-slate-200"><strong>Medical Conditions:</strong> {initialProfile?.existingConditions || 'None reported'}</p>
+                  <p className="text-slate-200"><strong>Symptom Triage:</strong> {sosSymptom}</p>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    onClick={() => {
+                      alert('Paramedic Brief Copied to Clipboard!');
+                    }}
+                    className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-rose-600/20 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Copy Paramedic Brief
+                  </button>
+                  <button
+                    onClick={() => setIsSosOpen(false)}
+                    className="px-4 py-2.5 bg-slate-900 text-slate-300 hover:text-white rounded-xl text-xs font-semibold border border-slate-800 cursor-pointer"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
