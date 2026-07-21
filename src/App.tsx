@@ -704,6 +704,41 @@ export default function App() {
     }
   };
 
+  const handleDirectSendChatMessage = async (userMsgText: string) => {
+    if (!userMsgText.trim() || isSendingChat) return;
+
+    setIsSendingChat(true);
+    setChatError('');
+
+    setChatMessages(prev => [...prev, { role: 'user', content: userMsgText, createdAt: new Date() }]);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ message: userMsgText, language: chatLanguage })
+      });
+      const data = await parseSafeJson(res);
+      if (data.success) {
+        const botReply = data.reply || data.response || data.message;
+        if (botReply) {
+          setChatMessages(prev => [...prev, { role: 'assistant', content: botReply, createdAt: new Date() }]);
+          speakMessage(botReply);
+        }
+        await fetchChatHistory(token);
+      } else {
+        setChatError(data.error || 'Failed to get a response from the AI.');
+      }
+    } catch (err: any) {
+      setChatError(err.message || 'Connection error.');
+    } finally {
+      setIsSendingChat(false);
+    }
+  };
+
   // Submit daily health log
   const handleSaveLog = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1028,6 +1063,29 @@ export default function App() {
         {/* Logged in Workspace Dashboard */}
         {isAuthenticated && (
           <div className="flex-grow flex flex-col gap-5 z-10 min-h-0">
+            {/* Hands-Free Voice AI Navigation & Command Assistant */}
+            <VoiceNavigation 
+              onNavigateTab={(tab) => setActiveTab(tab as any)}
+              onLogout={handleLogout}
+              onBypass={handleUseDevToken}
+              onUpdateField={(field, val) => {
+                setInitialProfile((prev: any) => ({ ...prev, [field]: val }));
+              }}
+              onSaveProfile={() => {
+                const defaultProfile = initialProfile || {
+                  age: 35, gender: 'Male', height: 175, weight: 75, sleep: 7.5, exercise: 30,
+                  smoking: false, alcohol: 'Occasional', waterIntake: 2.8, stress: 'Medium',
+                  familyHistory: 'None', existingConditions: 'None', goals: 'General Wellness'
+                };
+                handleProfileSubmit(defaultProfile);
+              }}
+              onSendChat={(msg) => {
+                setActiveTab('chat');
+                handleDirectSendChatMessage(msg);
+              }}
+              onTriggerSos={() => setIsSosOpen(true)}
+            />
+
             {/* End-to-End Clinical & AI Workflow Stepper Bar */}
             <div className="bg-slate-950/80 border border-slate-800/80 p-3 rounded-xl flex items-center justify-between gap-2 overflow-x-auto text-xs font-sans shadow-xl">
               {/* Stage 1: Authentication */}

@@ -2,18 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Volume2, VolumeX, Sparkles, Navigation, Command, CheckCircle2, HelpCircle } from 'lucide-react';
 
 interface VoiceNavigationProps {
-  onNavigateTab: (tab: 'assessment' | 'copilot' | 'radiology' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints') => void;
+  onNavigateTab: (tab: 'assessment' | 'copilot' | 'radiology' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints' | 'vision' | 'lab') => void;
   onLogout?: () => void;
   onBypass?: () => void;
   onUpdateField?: (field: string, value: any) => void;
   onSaveProfile?: () => void;
   onSendChat?: (message: string) => void;
+  onTriggerSos?: () => void;
 }
 
-export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onUpdateField, onSaveProfile, onSendChat }: VoiceNavigationProps) {
+export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onUpdateField, onSaveProfile, onSendChat, onTriggerSos }: VoiceNavigationProps) {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
-  const [feedback, setFeedback] = useState<string>('Click mic and say "Set weight 75" or "Go to Assessment"');
+  const [feedback, setFeedback] = useState<string>('Click mic and say "Ask AI what to do for acidity" or "Go to Vision AI"');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showCommandsModal, setShowCommandsModal] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -28,7 +29,7 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
 
       recognition.onstart = () => {
         setIsListening(true);
-        setFeedback('Listening for voice commands...');
+        setFeedback('Listening for hands-free voice commands...');
       };
 
       recognition.onresult = (event: any) => {
@@ -43,7 +44,7 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
       recognition.onerror = (event: any) => {
         console.warn('Speech recognition error:', event.error);
         setIsListening(false);
-        setFeedback('Microphone error. Click to restart.');
+        setFeedback('Microphone error. Click mic to restart.');
       };
 
       recognition.onend = () => {
@@ -66,9 +67,22 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
   };
 
   const processVoiceCommand = (cmd: string) => {
+    const cleanCmd = cmd.trim();
+    if (!cleanCmd) return;
+
+    // 0. Voice Emergency Action ("SOS", "Emergency", "Red Alert", "इमरजेंसी")
+    if (cleanCmd.includes('sos') || cleanCmd.includes('emergency') || cleanCmd.includes('red alert') || cleanCmd.includes('ambulance') || cleanCmd.includes('इमरजेंसी')) {
+      if (onTriggerSos) onTriggerSos();
+      const msg = 'Triggering Emergency Paramedic SOS Red Alert!';
+      setFeedback(msg);
+      speakFeedback(msg);
+      stopListening();
+      return;
+    }
+
     // 1. Voice Editing: Weight (e.g., "set weight 75" or "weight 75")
-    const weightMatch = cmd.match(/(?:set weight|weight is|my weight|weight)\s*(?:to|is)?\s*(\d+(?:\.\d+)?)/);
-    if (weightMatch && !cmd.includes('go to')) {
+    const weightMatch = cleanCmd.match(/(?:set weight|weight is|my weight|weight)\s*(?:to|is)?\s*(\d+(?:\.\d+)?)/);
+    if (weightMatch && !cleanCmd.includes('go to')) {
       const val = parseFloat(weightMatch[1]);
       if (onUpdateField) onUpdateField('weight', val);
       onNavigateTab('assessment');
@@ -80,8 +94,8 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
     }
 
     // 2. Voice Editing: Height (e.g., "set height 180" or "height 180")
-    const heightMatch = cmd.match(/(?:set height|height is|my height|height)\s*(?:to|is)?\s*(\d+(?:\.\d+)?)/);
-    if (heightMatch && !cmd.includes('go to')) {
+    const heightMatch = cleanCmd.match(/(?:set height|height is|my height|height)\s*(?:to|is)?\s*(\d+(?:\.\d+)?)/);
+    if (heightMatch && !cleanCmd.includes('go to')) {
       const val = parseFloat(heightMatch[1]);
       if (onUpdateField) onUpdateField('height', val);
       onNavigateTab('assessment');
@@ -93,8 +107,8 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
     }
 
     // 3. Voice Editing: Age (e.g., "set age 30" or "i am 30 years old")
-    const ageMatch = cmd.match(/(?:set age|age is|i am)\s*(?:to|is)?\s*(\d+)/);
-    if (ageMatch && !cmd.includes('go to')) {
+    const ageMatch = cleanCmd.match(/(?:set age|age is|i am)\s*(?:to|is)?\s*(\d+)/);
+    if (ageMatch && !cleanCmd.includes('go to')) {
       const val = parseInt(ageMatch[1]);
       if (onUpdateField) onUpdateField('age', val);
       onNavigateTab('assessment');
@@ -106,8 +120,8 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
     }
 
     // 4. Voice Editing: Sleep (e.g., "set sleep 8" or "sleep 8 hours")
-    const sleepMatch = cmd.match(/(?:set sleep|sleep is)\s*(?:to|is)?\s*(\d+(?:\.\d+)?)/);
-    if (sleepMatch && !cmd.includes('go to')) {
+    const sleepMatch = cleanCmd.match(/(?:set sleep|sleep is)\s*(?:to|is)?\s*(\d+(?:\.\d+)?)/);
+    if (sleepMatch && !cleanCmd.includes('go to')) {
       const val = parseFloat(sleepMatch[1]);
       if (onUpdateField) onUpdateField('sleep', val);
       onNavigateTab('assessment');
@@ -119,8 +133,8 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
     }
 
     // 5. Voice Editing: Exercise (e.g., "set exercise 45" or "exercise 45 mins")
-    const exerciseMatch = cmd.match(/(?:set exercise|exercise is)\s*(?:to|is)?\s*(\d+)/);
-    if (exerciseMatch && !cmd.includes('go to')) {
+    const exerciseMatch = cleanCmd.match(/(?:set exercise|exercise is)\s*(?:to|is)?\s*(\d+)/);
+    if (exerciseMatch && !cleanCmd.includes('go to')) {
       const val = parseInt(exerciseMatch[1]);
       if (onUpdateField) onUpdateField('exercise', val);
       onNavigateTab('assessment');
@@ -132,7 +146,7 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
     }
 
     // 6. Voice Action: Save Profile ("save profile", "update profile", "सेव करो")
-    if (cmd.includes('save profile') || cmd.includes('update profile') || cmd.includes('submit form') || cmd.includes('सेव करो')) {
+    if (cleanCmd.includes('save profile') || cleanCmd.includes('update profile') || cleanCmd.includes('submit form') || cleanCmd.includes('सेव करो')) {
       if (onSaveProfile) onSaveProfile();
       const msg = 'Saving and updating health profile';
       setFeedback(msg);
@@ -141,83 +155,121 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
       return;
     }
 
-    // 7. Voice Action: Ask AI Chatbot ("ask AI what should I eat for dinner")
-    const chatMatch = cmd.match(/(?:ask ai|ask assistant|chat)\s+(.+)/);
-    if (chatMatch) {
-      const query = chatMatch[1];
-      onNavigateTab('chat');
-      if (onSendChat) onSendChat(query);
-      const msg = `Asking AI Chatbot: ${query}`;
-      setFeedback(msg);
+    // 7. Voice Navigation Rules
+    if (cleanCmd.includes('vision') || cleanCmd.includes('food') || cleanCmd.includes('meal') || cleanCmd.includes('camera') || cleanCmd.includes('खाना')) {
+      onNavigateTab('vision');
+      const msg = 'Opening Vision AI Food & Meal Analyzer';
+      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
+      speakFeedback(msg);
+      stopListening();
+      return;
+    } 
+    
+    if (cleanCmd.includes('lab') || cleanCmd.includes('blood') || cleanCmd.includes('biomarker') || cleanCmd.includes('report') || cleanCmd.includes('ब्लड')) {
+      onNavigateTab('lab');
+      const msg = 'Opening Lab Report & Blood Biomarker Analyzer';
+      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
       speakFeedback(msg);
       stopListening();
       return;
     }
-    if (cmd.includes('copilot') || cmd.includes('doctor') || cmd.includes('physician') || cmd.includes('ehr') || cmd.includes('कॉपालिट')) {
+
+    if (cleanCmd.includes('copilot') || cleanCmd.includes('doctor') || cleanCmd.includes('physician') || cleanCmd.includes('ehr') || cleanCmd.includes('कॉपालिट')) {
       onNavigateTab('copilot');
       const msg = 'Opening Physician AI Co-Pilot Workstation';
-      setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
+      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
       speakFeedback(msg);
       stopListening();
-    } else if (cmd.includes('radiology') || cmd.includes('x-ray') || cmd.includes('mri') || cmd.includes('scan') || cmd.includes('रेडियोलॉजी')) {
+      return;
+    }
+
+    if (cleanCmd.includes('radiology') || cleanCmd.includes('x-ray') || cleanCmd.includes('mri') || cleanCmd.includes('scan') || cleanCmd.includes('रेडियोलॉजी')) {
       onNavigateTab('radiology');
       const msg = 'Opening Radiology Report Summarizer';
-      setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
+      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
       speakFeedback(msg);
       stopListening();
-    } else if (cmd.includes('assessment') || cmd.includes('profile') || cmd.includes('vitals') || cmd.includes('असेसमेंट') || cmd.includes('प्रोफाइल')) {
+      return;
+    }
+
+    if (cleanCmd.includes('assessment') || cleanCmd.includes('profile') || cleanCmd.includes('vitals') || cleanCmd.includes('असेसमेंट') || cleanCmd.includes('प्रोफाइल')) {
       onNavigateTab('assessment');
       const msg = 'Navigating to Health Assessment';
-      setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
+      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
       speakFeedback(msg);
       stopListening();
-    } else if (cmd.includes('chat') || cmd.includes('companion') || cmd.includes('assistant') || cmd.includes('ai') || cmd.includes('चैट') || cmd.includes('बात')) {
-      onNavigateTab('chat');
-      const msg = 'Opening AI Chat Companion';
-      setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
-      speakFeedback(msg);
-      stopListening();
-    } else if (cmd.includes('logs') || cmd.includes('tracker') || cmd.includes('daily') || cmd.includes('लॉग्स') || cmd.includes('ट्रैकर')) {
+      return;
+    }
+
+    if (cleanCmd.includes('logs') || cleanCmd.includes('tracker') || cleanCmd.includes('daily') || cleanCmd.includes('लॉग्स') || cleanCmd.includes('ट्रैकर')) {
       onNavigateTab('logs');
       const msg = 'Opening Daily Health Tracker';
-      setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
+      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
       speakFeedback(msg);
       stopListening();
-    } else if (cmd.includes('notifications') || cmd.includes('alerts') || cmd.includes('नोटिफिकेशन')) {
+      return;
+    }
+
+    if (cleanCmd.includes('notifications') || cleanCmd.includes('alerts') || cleanCmd.includes('नोटिफिकेशन')) {
       onNavigateTab('notifications');
       const msg = 'Opening Notifications';
-      setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
+      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
       speakFeedback(msg);
       stopListening();
-    } else if (cmd.includes('reports') || cmd.includes('weekly') || cmd.includes('रिपोर्ट')) {
+      return;
+    }
+
+    if (cleanCmd.includes('reports') || cleanCmd.includes('weekly') || cleanCmd.includes('रिपोर्ट')) {
       onNavigateTab('reports');
       const msg = 'Opening Weekly Reports';
-      setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
+      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
       speakFeedback(msg);
       stopListening();
-    } else if (cmd.includes('admin') || cmd.includes('workspace') || cmd.includes('analytics') || cmd.includes('एडमिन')) {
+      return;
+    }
+
+    if (cleanCmd.includes('admin') || cleanCmd.includes('workspace') || cleanCmd.includes('analytics') || cleanCmd.includes('एडमिन')) {
       onNavigateTab('admin');
       const msg = 'Navigating to Admin Workspace';
-      setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
+      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
       speakFeedback(msg);
       stopListening();
-    } else if (cmd.includes('api') || cmd.includes('endpoints') || cmd.includes('docs')) {
+      return;
+    }
+
+    if (cleanCmd.includes('api') || cleanCmd.includes('endpoints') || cleanCmd.includes('docs')) {
       onNavigateTab('endpoints');
       const msg = 'Opening REST APIs Info';
-      setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
+      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
       speakFeedback(msg);
       stopListening();
-    } else if (cmd.includes('logout') || cmd.includes('sign out') || cmd.includes('लॉगआउट')) {
+      return;
+    }
+
+    if (cleanCmd.includes('logout') || cleanCmd.includes('sign out') || cleanCmd.includes('लॉगआउट')) {
       if (onLogout) onLogout();
       const msg = 'Logging out of session';
-      setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
+      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
       speakFeedback(msg);
       stopListening();
-    } else if (cmd.includes('bypass') || cmd.includes('demo')) {
-      if (onBypass) onBypass();
-      const msg = 'Initializing sandbox session';
-      setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
-      speakFeedback(msg);
+      return;
+    }
+
+    // 8. Autonomous Voice Query Handler: Any spoken sentence automatically sent to AI Chatbot!
+    const isHealthOrGeneralQuery = cleanCmd.length > 3 && (
+      cleanCmd.includes('ask') || cleanCmd.includes('what') || cleanCmd.includes('how') || 
+      cleanCmd.includes('why') || cleanCmd.includes('cure') || cleanCmd.includes('fever') || 
+      cleanCmd.includes('acidity') || cleanCmd.includes('pain') || cleanCmd.includes('namaste') || 
+      cleanCmd.includes('hello') || cleanCmd.includes('hi') || cleanCmd.includes('diet') ||
+      cleanCmd.includes('help') || cleanCmd.split(' ').length >= 2
+    );
+
+    if (isHealthOrGeneralQuery) {
+      onNavigateTab('chat');
+      if (onSendChat) onSendChat(cleanCmd);
+      const msg = `Asking AI Assistant: "${cleanCmd}"`;
+      setFeedback(msg);
+      speakFeedback(`Asking AI Assistant for ${cleanCmd}`);
       stopListening();
     }
   };
