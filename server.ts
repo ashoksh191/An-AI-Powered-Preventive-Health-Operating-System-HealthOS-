@@ -62,9 +62,9 @@ function getGeminiClient(): GoogleGenAI {
   return geminiClient;
 }
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-async function bootstrap() {
+export async function createApp() {
   const app = express();
 
   // Middleware for parsing JSON bodies
@@ -2435,6 +2435,18 @@ Make the tone supportive, direct, and professional. Always include a standard me
   });
 
   // ==========================================
+  // API JSON 404 FALLBACK MIDDLEWARE
+  // ==========================================
+
+  // Prevent any /api/* or /admin/* or /chat/* route from returning SPA index.html (HTML)
+  app.all(['/api/*', '/admin/*', '/chat/*'], (req: express.Request, res: express.Response) => {
+    res.status(404).json({
+      success: false,
+      error: `API endpoint '${req.originalUrl}' was not found on this server.`,
+    });
+  });
+
+  // ==========================================
   // FRONTEND INTEGRATION
   // ==========================================
 
@@ -2454,12 +2466,18 @@ Make the tone supportive, direct, and professional. Always include a standard me
     });
   }
 
-  // Start the listener
+  return app;
+}
+
+async function bootstrap() {
+  const app = await createApp();
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`[Server] Running on http://localhost:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
   });
 }
 
-bootstrap().catch((err) => {
-  console.error('[Server Bootstrap Failed]', err);
-});
+if (process.env.VERCEL !== '1') {
+  bootstrap().catch((err) => {
+    console.error('[Server Bootstrap Failed]', err);
+  });
+}
