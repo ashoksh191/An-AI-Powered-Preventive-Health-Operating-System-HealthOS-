@@ -1,4 +1,4 @@
-const API_URL = "https://an-ai-powered-preventive-health-operating-system-production.up.railway.app";
+const API_URL = (import.meta as any).env?.VITE_API_URL || "";
 import { calculateDiseaseRisks } from './predictor';
 import { calculateHealthScore } from './health-score';
 

@@ -221,7 +221,7 @@ export async function getOrCreateUser(id: string, email: string) {
       });
     } catch (err) {
       console.error('Prisma Error in getOrCreateUser:', err);
-      throw new Error('Database query failed while synchronizing user profile.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -256,7 +256,7 @@ export async function getHealthProfile(userId: string) {
       });
     } catch (err) {
       console.error('Prisma Error in getHealthProfile:', err);
-      throw new Error('Database query failed while retrieving health profile.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -298,7 +298,7 @@ export async function createHealthProfile(userId: string, data: {
       if (err.code === 'P2002') {
         throw new Error('A health profile already exists for this user. Use PATCH or PUT to update instead.');
       }
-      throw new Error('Database query failed while creating health profile.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -363,7 +363,7 @@ export async function updateHealthProfile(userId: string, data: Partial<{
       if (err.message?.includes('No existing health profile found')) {
         throw err;
       }
-      throw new Error('Database query failed while updating health profile.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -405,7 +405,7 @@ export async function setStoreValue(userId: string, key: string, value: string) 
       });
     } catch (err) {
       console.error('Prisma Error in setStoreValue:', err);
-      throw new Error('Database query failed while writing key-value store.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -443,7 +443,7 @@ export async function getStoreValue(userId: string, key: string) {
       });
     } catch (err) {
       console.error('Prisma Error in getStoreValue:', err);
-      throw new Error('Database query failed while reading key-value store.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -462,7 +462,7 @@ export async function getAllStoreValues(userId: string) {
       });
     } catch (err) {
       console.error('Prisma Error in getAllStoreValues:', err);
-      throw new Error('Database query failed while listing key-value store.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -503,7 +503,7 @@ export async function savePrediction(userId: string, data: {
       });
     } catch (err) {
       console.error('Prisma Error in savePrediction:', err);
-      throw new Error('Database query failed while saving prediction result.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -532,7 +532,7 @@ export async function getPredictionHistory(userId: string) {
       });
     } catch (err) {
       console.error('Prisma Error in getPredictionHistory:', err);
-      throw new Error('Database query failed while retrieving prediction history.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -567,7 +567,7 @@ export async function saveHealthScore(userId: string, data: {
       });
     } catch (err) {
       console.error('Prisma Error in saveHealthScore:', err);
-      throw new Error('Database query failed while saving health score record.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -596,7 +596,7 @@ export async function getHealthScoreHistory(userId: string) {
       });
     } catch (err) {
       console.error('Prisma Error in getHealthScoreHistory:', err);
-      throw new Error('Database query failed while retrieving health score history.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -633,7 +633,7 @@ export async function saveLifestylePlan(userId: string, data: {
       });
     } catch (err) {
       console.error('Prisma Error in saveLifestylePlan:', err);
-      throw new Error('Database query failed while saving lifestyle plan.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -674,7 +674,7 @@ export async function getLifestylePlan(userId: string) {
       });
     } catch (err) {
       console.error('Prisma Error in getLifestylePlan:', err);
-      throw new Error('Database query failed while retrieving lifestyle plan.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -703,7 +703,7 @@ export async function updateLifestylePlan(userId: string, data: Partial<{
       });
     } catch (err) {
       console.error('Prisma Error in updateLifestylePlan:', err);
-      throw new Error('Database query failed while updating lifestyle plan.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -742,7 +742,7 @@ export async function saveDailyLog(userId: string, data: {
       });
     } catch (err) {
       console.error('Prisma Error in saveDailyLog:', err);
-      throw new Error('Database query failed while saving daily log.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -771,7 +771,7 @@ export async function getDailyLogs(userId: string) {
       });
     } catch (err) {
       console.error('Prisma Error in getDailyLogs:', err);
-      throw new Error('Database query failed while retrieving daily logs.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -804,7 +804,7 @@ export async function saveDailyHealthLog(userId: string, data: {
       });
     } catch (err) {
       console.error('Prisma Error in saveDailyHealthLog:', err);
-      throw new Error('Database query failed while saving daily health log.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -835,7 +835,7 @@ export async function getDailyHealthLogs(userId: string) {
       });
     } catch (err) {
       console.error('Prisma Error in getDailyHealthLogs:', err);
-      throw new Error('Database query failed while retrieving daily health logs.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -874,7 +874,7 @@ export async function updateDailyHealthLog(userId: string, id: number, data: Par
       });
     } catch (err: any) {
       console.error('Prisma Error in updateDailyHealthLog:', err);
-      throw new Error(err.message || 'Database query failed while updating daily health log.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -915,7 +915,7 @@ export async function deleteDailyHealthLog(userId: string, id: number) {
       return { success: true, id };
     } catch (err: any) {
       console.error('Prisma Error in deleteDailyHealthLog:', err);
-      throw new Error(err.message || 'Database query failed while deleting daily health log.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -946,7 +946,7 @@ export async function saveChatMessage(userId: string, role: 'user' | 'model', co
       });
     } catch (err) {
       console.error('Prisma Error in saveChatMessage:', err);
-      throw new Error('Database query failed while saving chat message.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -976,7 +976,7 @@ export async function getChatHistory(userId: string) {
       });
     } catch (err) {
       console.error('Prisma Error in getChatHistory:', err);
-      throw new Error('Database query failed while retrieving chat history.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -1005,7 +1005,7 @@ export async function saveNotification(userId: string, data: { type: string, tit
       });
     } catch (err) {
       console.error('Prisma Error in saveNotification:', err);
-      throw new Error('Database query failed while saving notification.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -1037,7 +1037,7 @@ export async function getNotifications(userId: string) {
       });
     } catch (err) {
       console.error('Prisma Error in getNotifications:', err);
-      throw new Error('Database query failed while retrieving notifications.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -1065,7 +1065,7 @@ export async function saveReport(userId: string, data: { type: string, title: st
       });
     } catch (err) {
       console.error('Prisma Error in saveReport:', err);
-      throw new Error('Database query failed while saving report.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -1096,7 +1096,7 @@ export async function getReports(userId: string) {
       });
     } catch (err) {
       console.error('Prisma Error in getReports:', err);
-      throw new Error('Database query failed while retrieving reports.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -1130,7 +1130,7 @@ export async function getAllUsersAdmin() {
       });
     } catch (err) {
       console.error('Prisma Error in getAllUsersAdmin:', err);
-      throw new Error('Database query failed while retrieving all users.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -1177,7 +1177,7 @@ export async function getAllReportsAdmin() {
       });
     } catch (err) {
       console.error('Prisma Error in getAllReportsAdmin:', err);
-      throw new Error('Database query failed while retrieving all reports.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
@@ -1264,7 +1264,7 @@ export async function getSystemStatsAdmin() {
       };
     } catch (err) {
       console.error('Prisma Error in getSystemStatsAdmin:', err);
-      throw new Error('Database query failed while retrieving system stats.', { cause: err });
+      console.warn("Prisma query failed, falling back to in-memory database:", err);
     }
   }
 
