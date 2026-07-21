@@ -1,8 +1,9 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" },
-    { "source": "/admin/(.*)", "destination": "/api" },
-    { "source": "/chat/(.*)", "destination": "/api" }
+    { "source": "/api/(.*)", "destination": "/api/index.ts" },
+    { "source": "/admin/(.*)", "destination": "/api/index.ts" },
+    { "source": "/chat/(.*)", "destination": "/api/index.ts" },
+    { "source": "/((?!api|admin|chat).*)", "destination": "/index.html" }
   ]
 }
