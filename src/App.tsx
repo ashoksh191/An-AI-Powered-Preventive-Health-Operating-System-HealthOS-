@@ -3,7 +3,7 @@ import {
   Server, Shield, CheckCircle, Terminal, Heart, Sparkles, Key, 
   Activity, LayoutDashboard, Send, User, MessageSquare, Plus, 
   RefreshCw, LogOut, Smile, Droplets, ArrowRight, UserCheck, AlertCircle,
-  Bell, FileText, ShieldAlert, Users, BarChart3, Stethoscope, Layers, Volume2, VolumeX
+  Bell, FileText, ShieldAlert, Users, BarChart3, Stethoscope, Layers, Volume2, VolumeX, Globe, Mic, MicOff
 } from 'lucide-react';
 import ProfileForm from './components/ProfileForm';
 import VoiceNavigation from './components/VoiceNavigation';
@@ -56,6 +56,58 @@ export default function App() {
   const [chatError, setChatError] = useState('');
   const [speakingMsgText, setSpeakingMsgText] = useState<string>('');
   const [autoReadAi, setAutoReadAi] = useState<boolean>(true);
+  const [chatLanguage, setChatLanguage] = useState<string>('English');
+  const [isListeningChat, setIsListeningChat] = useState<boolean>(false);
+
+  const SUPPORTED_LANGUAGES = [
+    { code: 'en-US', label: '🇬🇧 English', name: 'English' },
+    { code: 'hi-IN', label: '🇮🇳 Hindi (हिंदी)', name: 'Hindi' },
+    { code: 'hi-IN', label: '🇮🇳 Hinglish', name: 'Hinglish' },
+    { code: 'es-ES', label: '🇪🇸 Spanish (Español)', name: 'Spanish' },
+    { code: 'fr-FR', label: '🇫🇷 French (Français)', name: 'French' },
+    { code: 'de-DE', label: '🇩🇪 German (Deutsch)', name: 'German' },
+    { code: 'zh-CN', label: '🇨🇳 Chinese (中文)', name: 'Chinese' },
+    { code: 'ar-SA', label: '🇸🇦 Arabic (العربية)', name: 'Arabic' },
+    { code: 'bn-IN', label: '🇧🇩 Bengali (বাংলা)', name: 'Bengali' },
+    { code: 'ta-IN', label: '🇮🇳 Tamil (தமிழ்)', name: 'Tamil' },
+    { code: 'mr-IN', label: '🇮🇳 Marathi (मराठी)', name: 'Marathi' },
+    { code: 'te-IN', label: '🇮🇳 Telugu (తెలుగు)', name: 'Telugu' },
+  ];
+
+  const toggleMicListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setChatError('Speech recognition is not supported in this browser. Try Chrome or Edge.');
+      return;
+    }
+
+    if (isListeningChat) {
+      setIsListeningChat(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      
+      const langObj = SUPPORTED_LANGUAGES.find(l => l.name === chatLanguage);
+      recognition.lang = langObj ? langObj.code : 'en-US';
+
+      recognition.onstart = () => setIsListeningChat(true);
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setNewMessage(prev => prev ? `${prev} ${transcript}` : transcript);
+        setIsListeningChat(false);
+      };
+      recognition.onerror = () => setIsListeningChat(false);
+      recognition.onend = () => setIsListeningChat(false);
+
+      recognition.start();
+    } catch (e) {
+      setIsListeningChat(false);
+    }
+  };
 
   const speakMessage = (text: string) => {
     if (!('speechSynthesis' in window)) return;
@@ -72,11 +124,16 @@ export default function App() {
     const cleanText = text
       .replace(/[*_#~`]/g, '')
       .replace(/⚠️/g, 'Warning.')
-      .replace(/🌡️|🤕|😷|🤢|🩸|💓|🦴|😴|💧|👨‍⚕️|🥗|🏋️/g, '');
+      .replace(/🌡️|🤕|😷|🤢|🩸|💓|🦴|😴|💧|👨‍⚕️|🥗|🏋️|🛡️|🚨|🦋|🫀|🦶|🌸|🫁|👃|🪨|🚽|🧴|🧘|😷|🔬|🦟/g, '');
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.rate = 0.95;
     utterance.pitch = 1.0;
+
+    const langObj = SUPPORTED_LANGUAGES.find(l => l.name === chatLanguage);
+    if (langObj) {
+      utterance.lang = langObj.code;
+    }
 
     utterance.onend = () => setSpeakingMsgText('');
     utterance.onerror = () => setSpeakingMsgText('');
@@ -447,7 +504,7 @@ export default function App() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ message: userMsg })
+        body: JSON.stringify({ message: userMsg, language: chatLanguage })
       });
       const data = await parseSafeJson(res);
       if (data.success) {
@@ -1103,13 +1160,29 @@ export default function App() {
                 {/* Chat Feed Panel */}
                 <div className="flex-grow flex flex-col bg-slate-950 border border-slate-800 rounded-xl overflow-hidden shadow-inner min-h-[400px] md:h-full justify-between">
                   {/* Panel Header */}
-                  <div className="bg-slate-900 border-b border-slate-800/80 px-4 py-3 flex items-center justify-between">
+                  <div className="bg-slate-900 border-b border-slate-800/80 px-4 py-3 flex items-center justify-between flex-wrap gap-2">
                     <div className="flex items-center gap-2">
                       <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse" />
-                      <span className="text-xs font-semibold text-slate-200">Personalized Companion Room</span>
+                      <span className="text-xs font-semibold text-slate-200">HealthOS Companion Room</span>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5">
+                      {/* 10+ Multi-Language Selector Dropdown */}
+                      <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 shadow-inner">
+                        <Globe className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                        <select
+                          value={chatLanguage}
+                          onChange={(e) => setChatLanguage(e.target.value)}
+                          className="bg-transparent text-xs font-bold text-indigo-300 focus:outline-none cursor-pointer"
+                        >
+                          {SUPPORTED_LANGUAGES.map((lang, i) => (
+                            <option key={i} value={lang.name} className="bg-slate-900 text-slate-200">
+                              {lang.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
                       <button
                         type="button"
                         onClick={() => setAutoReadAi(!autoReadAi)}
@@ -1140,9 +1213,9 @@ export default function App() {
                       <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3">
                         <MessageSquare className="w-8 h-8 text-indigo-400/40" />
                         <div className="max-w-xs space-y-1">
-                          <p className="text-sm font-semibold text-slate-300">Welcome to Health Chat!</p>
+                          <p className="text-sm font-semibold text-slate-300">Welcome to HealthOS AI Chat!</p>
                           <p className="text-xs text-slate-400 leading-relaxed">
-                            Ask medical-grounded or lifestyle questions. The AI has immediate access to your profile data, predictions, and logged logs.
+                            Ask health, medical, or lifestyle questions in 10+ languages. Grounded strictly in your HealthOS vitals and profile.
                           </p>
                         </div>
                       </div>
@@ -1174,12 +1247,12 @@ export default function App() {
                                 {speakingMsgText === msg.content ? (
                                   <>
                                     <VolumeX className="w-3 h-3 text-rose-400 animate-pulse" />
-                                    <span className="text-rose-300">Stop AI Audio Voice</span>
+                                    <span className="text-rose-300">Stop Voice</span>
                                   </>
                                 ) : (
                                   <>
                                     <Volume2 className="w-3 h-3 text-indigo-400" />
-                                    <span>🔊 Listen AI Voice Answer</span>
+                                    <span>🔊 Listen AI Voice ({chatLanguage})</span>
                                   </>
                                 )}
                               </button>
@@ -1208,7 +1281,7 @@ export default function App() {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
                           </span>
-                          <span>Companion is reviewing your logs & typing...</span>
+                          <span>HealthOS Companion is reviewing your vitals & typing in {chatLanguage}...</span>
                         </div>
                       </div>
                     )}
@@ -1222,19 +1295,32 @@ export default function App() {
                     <div ref={chatEndRef} />
                   </div>
 
-                  {/* Input Form */}
-                  <form onSubmit={handleSendChat} className="bg-slate-900 border-t border-slate-800/80 p-3 flex gap-2">
+                  {/* Input Form with Speech-To-Text Mic */}
+                  <form onSubmit={handleSendChat} className="bg-slate-900 border-t border-slate-800/80 p-3 flex gap-2 items-center">
+                    <button
+                      type="button"
+                      onClick={toggleMicListening}
+                      className={`p-2 rounded-lg text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+                        isListeningChat 
+                          ? 'bg-rose-600 text-white animate-pulse shadow-md shadow-rose-600/30' 
+                          : 'bg-slate-950 border border-slate-800 text-slate-300 hover:bg-slate-800'
+                      }`}
+                      title={`Speak query in ${chatLanguage} (Speech-to-Text)`}
+                    >
+                      {isListeningChat ? <MicOff className="w-4 h-4 text-white" /> : <Mic className="w-4 h-4 text-indigo-400" />}
+                    </button>
+
                     <input 
                       type="text"
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Ask for advice, pattern analysis, or medical queries..."
+                      placeholder={isListeningChat ? `Listening in ${chatLanguage}... speak now!` : `Ask HealthOS AI question in ${chatLanguage}...`}
                       className="flex-grow bg-slate-950 border border-slate-800/80 rounded-lg px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500"
                     />
                     <button 
                       type="submit"
                       disabled={!newMessage.trim() || isSendingChat}
-                      className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 transition-colors text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
+                      className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 transition-colors text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 shrink-0"
                     >
                       <Send className="w-3.5 h-3.5" />
                       Send

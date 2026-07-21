@@ -1981,7 +1981,7 @@ Ensure all text descriptions are written in polished, supportive, and motivating
       const userId = req.user?.id || 'dev-user-id';
       const email = req.user?.email || '';
 
-      const { message } = req.body || {};
+      const { message, language = 'English' } = req.body || {};
       if (!message || typeof message !== 'string' || message.trim().length === 0) {
         res.status(400).json({ success: false, error: 'Field "message" is required and must be a non-empty string.' });
         return;
@@ -2011,8 +2011,17 @@ Ensure all text descriptions are written in polished, supportive, and motivating
       const lifestylePlanStr = lifestylePlan ? JSON.stringify(lifestylePlan, null, 2) : "No active lifestyle plan yet.";
       const dailyHealthLogsStr = dailyHealthLogs && dailyHealthLogs.length > 0 ? JSON.stringify(dailyHealthLogs, null, 2) : "No tracking logs found.";
 
-      const systemInstruction = `You are a highly personalized AI Health Chat Assistant.
-Your goal is to provide insightful, empathetic, encouraging, and medically-grounded health and lifestyle feedback to the user based on their specific health profile, prediction risks, health scores, and lifestyle logs.
+      const systemInstruction = `You are the official AI Health Assistant for "HealthOS" — an AI-Powered Preventive Health Operating System.
+
+STRICT PLATFORM GROUNDING RULE (CRITICAL):
+1. YOU MUST ONLY RESPOND TO QUERIES RELATED TO PREVENTIVE HEALTH, MEDICAL ADVICE, WELLNESS, LIFESTYLE, DIET, FITNESS, DISEASE RISK PREDICTIONS, VITAL LOGGING, RADIOLOGY SUMMARIZATION, PHYSICIAN COPILOT, AND HEALTHOS PLATFORM FEATURES.
+2. IF THE USER ASKS AN OFF-TOPIC QUESTION UNRELATED TO HEALTH OR THE HEALTHOS PLATFORM (such as programming/coding, sports scores, movie reviews, politics, finance, crypto, or general non-health trivia), POLITELY DECLINE IN THE TARGET LANGUAGE:
+   "I am the HealthOS AI Assistant, specialized strictly in preventive health, medical queries, lifestyle guidance, and HealthOS platform features. Please ask a health or wellness-related question!"
+
+TARGET RESPONSE LANGUAGE:
+- User Selected Language: "${language}".
+- You MUST generate your response strictly in "${language}".
+- If Hindi (हिंदी), use Devanagari script. If Hinglish, write Hindi using Roman/English script. If Spanish, French, German, Chinese, Arabic, Bengali, Tamil, Marathi, or Telugu, respond fluently in that exact target language!
 
 CRITICAL PATIENT SAFETY & CONTRAINDICATION RULES:
 1. ALWAYS CROSS-EXAMINE THE USER'S SAVED HEALTH PROFILE, CONDITIONS, AND RISKS BEFORE GIVING ANY ADVICE OR REMEDY.
@@ -2027,8 +2036,6 @@ CRITICAL PATIENT SAFETY & CONTRAINDICATION RULES:
    - EXPLICITLY WARN: "Based on your blood pressure profile, keep sodium and salt intake strictly low."
 5. IF THE USER HAS DRUG ALLERGIES OR RENAL (KIDNEY) IMPAIRMENT:
    - EXPLICITLY WARN against known allergen drugs and suggest safe non-nephrotoxic alternatives.
-
-LANGUAGE FLEXIBILITY: You are fluent in English, Hindi (हिंदी), and Hinglish (Hindi written in Roman/English script). If the user chats with you in Hindi or Hinglish, answer them naturally in fluent Hindi/Hinglish with health advice tailored to Indian lifestyles and diet!
 
 === USER HEALTH PROFILE ===
 ${profileStr}
@@ -2045,7 +2052,7 @@ ${lifestylePlanStr}
 === RECENT TRACKING LOGS ===
 ${dailyHealthLogsStr}
 
-Please use this state to answer the user's questions or give insights. Maintain a professional, warm, supportive tone, and include standard medical disclaimers where appropriate.`;
+Please use this state to answer the user's health questions or give insights. Maintain a professional, warm, supportive tone, and include standard medical disclaimers where appropriate.`;
 
       // 3. Retrieve existing chat history safely
       let chatHistory: any[] = [];
@@ -2095,8 +2102,15 @@ Please use this state to answer the user's questions or give insights. Maintain 
       if (!modelResponse) {
         const msgLower = message.toLowerCase();
 
+        // OFF-TOPIC PLATFORM GROUNDING CHECK
+        const offTopicKeywords = ['coding', 'python', 'javascript', 'movie', 'actor', 'cricket', 'football', 'sports', 'politic', 'stock', 'crypto', 'bitcoin', 'game', 'singing'];
+        const isOffTopic = offTopicKeywords.some(kw => msgLower.includes(kw));
+
+        if (isOffTopic) {
+          modelResponse = `🛡️ **HealthOS Platform Grounding Notice:**\n\nI am the HealthOS AI Health Assistant, specialized strictly in preventive health, medical queries, lifestyle guidance, and HealthOS platform features. Please ask a health or wellness-related question!`;
+        }
         // 0. EMERGENCY FIRST-AID & INJURY PROTOCOLS (Nosebleed, Minor Cuts, Wounds, Burns, Sprains, Fainting)
-        if (msgLower.includes('nosebleed') || msgLower.includes('nose bleeding') || msgLower.includes('nak se khoon') || msgLower.includes('nose bleed') || msgLower.includes('bleeding nose') || msgLower.includes('epistaxis')) {
+        else if (msgLower.includes('nosebleed') || msgLower.includes('nose bleeding') || msgLower.includes('nak se khoon') || msgLower.includes('nose bleed') || msgLower.includes('bleeding nose') || msgLower.includes('epistaxis')) {
           modelResponse = `🩸 **Emergency First-Aid for Nosebleed (नाक से खून बहना / Nosebleeding):**\n\n1. **Pinch & Lean Forward:** Sit upright and lean your head SLIGHTLY FORWARD (never lean backward, as blood can enter your stomach or airway). Firmly pinch the soft part of your nose just below the bridge for 10-15 continuous minutes without letting go.\n2. **Cold Compress:** Apply an ice pack or cold washcloth to the bridge of your nose and back of your neck.\n3. **Breathing:** Breathe through your mouth while holding pressure.\n4. **Post-Bleeding Care:** Do not blow your nose, pick your nose, or bend over for at least 12 hours after the bleeding stops.\n5. **Red Flags:** Seek emergency medical care if bleeding lasts > 20 minutes despite continuous pressure, or if caused by a severe head blow.`;
         }
         else if (msgLower.includes('chot') || msgLower.includes('cut') || msgLower.includes('wound') || msgLower.includes('scrape') || msgLower.includes('injury') || msgLower.includes('bleed') || msgLower.includes('bleeding') || msgLower.includes('hurt')) {
