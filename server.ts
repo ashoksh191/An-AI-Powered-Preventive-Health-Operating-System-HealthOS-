@@ -1261,11 +1261,17 @@ export async function createApp() {
         console.warn('Could not load health profile for coach prompt enrichment', err);
       }
 
-      // 2. Build the detailed prompt
+      // 2. Build the constraint-aware detailed prompt
+      const cuisine = profile?.cuisine || req.body.cuisine || 'Indian/South Asian';
+      const budget = profile?.budget || req.body.budget || 'Budget-Friendly';
+      const prepTime = profile?.prepTime || req.body.prepTime || 'Quick (< 15 mins)';
+      const equipmentStr = Array.isArray(profile?.equipment) ? profile.equipment.join(', ') : (req.body.equipment || 'Bodyweight Only');
+      const dietStr = Array.isArray(profile?.dietaryRestrictions) ? profile.dietaryRestrictions.join(', ') : (req.body.dietaryRestrictions || dietaryRestrictions || 'None');
+
       let userContextPrompt = '';
       if (profile) {
         userContextPrompt = `
-Health Profile of the user:
+Health Profile & Personal Constraints:
 - Age: ${profile.age} years old
 - Gender: ${profile.gender}
 - Height: ${profile.height} cm
@@ -1274,37 +1280,44 @@ Health Profile of the user:
 - Baseline Physical Activity: ${profile.exercise} minutes/day
 - Smoking Status: ${profile.smoking ? 'Smoker' : 'Non-smoker'}
 - Alcohol Intake: ${profile.alcohol}
-- Baseline Water Intake: ${profile.waterIntake} Liters/day
-- Baseline Stress Level: ${profile.stress}
+- Water Intake: ${profile.waterIntake} Liters/day
+- Stress Level: ${profile.stress}
 - Family History: ${profile.familyHistory || 'None reported'}
-- Existing Medical Conditions: ${profile.existingConditions || 'None reported'}
+- Medical Conditions: ${profile.existingConditions || 'None reported'}
+- Region & Cuisine: ${cuisine}
+- Budget Level: ${budget}
+- Max Prep Time: ${prepTime}
+- Available Workout Equipment: ${equipmentStr}
+- Dietary Restrictions: ${dietStr}
 `;
       } else {
         userContextPrompt = `
 Health Profile of the user:
-- No existing medical profile loaded. Assume standard baseline levels.
+- Standard baseline metrics.
+- Region & Cuisine: ${cuisine}
+- Budget Level: ${budget}
+- Available Workout Equipment: ${equipmentStr}
+- Dietary Restrictions: ${dietStr}
 `;
       }
 
       const prompt = `
-You are an expert AI Lifestyle Coach, certified personal trainer, and clinical dietitian.
-Generate a comprehensive, premium-grade, actionable lifestyle plan for a user.
+You are an expert, empathetic clinical nutritionist and strength coach.
+Generate a personalized 1-day health protocol based on the user's vitals and strict constraints:
+- Cuisine/Region: ${cuisine}
+- Budget Level: ${budget}
+- Max Prep Time: ${prepTime}
+- Workout Equipment: ${equipmentStr}
+- Dietary Restrictions: ${dietStr}
+
+CRITICAL RULES:
+1. Recommendations MUST align strictly with the user's budget and region (${cuisine}, ${budget}). Avoid hard-to-source or expensive ingredients (like fresh blueberries, salmon, avocado, or imported chia seeds) if the user selects Budget-Friendly or local regional cuisine. Suggest accessible, high-yield alternatives (e.g. local seasonal fruits, lentils/dal, paneer/tofu, eggs, local greens, oats/dalia).
+2. Workout routines MUST strictly use ONLY the selected equipment (${equipmentStr}). If Bodyweight Only is selected, DO NOT include dumbbells or commercial gym equipment!
+3. Format the response as clean Markdown structured into clear sections: Nutrition Protocol, Target Workout, and Daily Habits.
 
 ${userContextPrompt}
 
-User Preferences & Custom Focus:
-- Core Goals: ${goals || 'Improve overall health and fitness'}
-- Dietary Restrictions: ${dietaryRestrictions || 'None'}
-- Fitness Level: ${fitnessLevel || 'Intermediate'}
-
-Please generate a highly tailored, scientific, and practical lifestyle plan. Make sure:
-1. The Meal Plan contains concrete, delicious, nutrient-dense breakfast, lunch, dinner, and snack ideas for the week, structured with clear instructions.
-2. The Workout Plan contains safe, progressive exercise routines with specific sets, reps, or durations customized to their fitness level and BMI.
-3. The Water Goal is a precise daily volume in Liters, optimized for their weight and activity.
-4. The Sleep Schedule proposes realistic rest intervals and 3 actionable habits to improve deep sleep cycles.
-5. The Stress Tips contain practical, immediate stress buffers (like box breathing, somatic grounding, or digital detox routines) that fit their life.
-
-Ensure all text descriptions are written in polished, supportive, and motivating language.
+User Goals: ${goals || 'Improve overall health and fitness'}
 `;
 
       // 3. Query Gemini API
@@ -1341,11 +1354,11 @@ Ensure all text descriptions are written in polished, supportive, and motivating
 
       if (!generatedPlan) {
         generatedPlan = {
-          mealPlan: `### Weekly High-Performance Nutrition Plan (${goals || 'General Wellness'})\n\n- **Breakfast:** Oats with chia seeds, blueberries, and protein shake.\n- **Lunch:** Mediterranean Quinoa bowl with grilled chicken/tofu & greens.\n- **Dinner:** Pan-seared salmon or lentils with roasted veggies and sweet potato.\n- **Snacks:** Apple slices with almond butter or non-fat Greek yogurt.`,
-          workoutPlan: `### Weekly Workout Routine (${fitnessLevel || 'Intermediate'})\n\n- **Day 1:** Upper Body Strength (Pushups, Dumbbell Rows, Shoulder Press - 3x12)\n- **Day 2:** Zone 2 Cardio (30 mins cycling or brisk walking)\n- **Day 3:** Lower Body & Core (Goblet Squats, Lunges, Planks)\n- **Day 4:** HIIT Cardio & Mobility Stretches`,
+          mealPlan: `### Daily Constraint-Aware Nutrition Protocol (${cuisine} • ${budget})\n\n- **Breakfast:** Warm Oatmeal / Dalia with roasted peanuts, banana slices & cinnamon.\n- **Lunch:** ${cuisine.includes('Indian') ? 'Yellow Moong Dal with Roti, Curd & Steamed Spinach' : 'Whole Grain Mediterranean Rice bowl with Lentils & Cucumbers'}.\n- **Dinner:** ${cuisine.includes('Indian') ? 'Paneer / Tofu Sabzi with 2 Multigrain Rotis & Cucumber salad' : 'Grilled Tofu / Egg Stir-Fry with Steamed Veggies'}.\n- **Snacks:** Roasted Chana (chickpeas) or seasonal fruit.`,
+          workoutPlan: `### Daily Target Workout Routine (${equipmentStr})\n\n- **Warmup:** 5 mins arm circles, torso twists & light jumping jacks.\n- **Exercise 1:** ${equipmentStr.includes('Bodyweight') ? 'Bodyweight Air Squats (3 sets of 15 reps)' : 'Goblet Squats (3 sets of 12 reps)'}.\n- **Exercise 2:** ${equipmentStr.includes('Bodyweight') ? 'Pushups or Incline Countertop Pushups (3 sets of 10 reps)' : 'Dumbbell Chest Press (3 sets of 10 reps)'}.\n- **Exercise 3:** Plank Hold (3 sets of 30 seconds).\n- **Cooldown:** 5 mins quad, hamstring & shoulder stretches.`,
           waterGoal: 2.8,
-          sleepSchedule: `### Sleep & Rest Optimization\n\n- Bedtime: 10:30 PM | Wake time: 6:30 AM\n- Avoid blue-light screens 45 minutes before sleep.\n- Maintain room temperature around 19°C (66°F).`,
-          stressTips: `### Personalized Stress Buffers\n\n1. Perform 3 physiological sighs when tense.\n2. 20-minute daily nature walk without phone notifications.\n3. Keep a nightly gratitude journal.`,
+          sleepSchedule: `### Rest & Circadian Optimization\n\n- Sleep Target: 7.5 - 8.0 Hours\n- Keep bedroom dark and cool (~20°C).\n- 10-minute wind-down reading before bed.`,
+          stressTips: `### Daily Stress Buffers\n\n1. 3 Physiological sighs whenever feeling elevated stress.\n2. 15-minute nature walk after lunch.\n3. Digital detox 30 mins before sleep.`,
         };
       }
 
@@ -1375,6 +1388,83 @@ Ensure all text descriptions are written in polished, supportive, and motivating
       });
     }
   };
+
+  const handleSwapCoachItem = async (req: AuthenticatedRequest, res: any) => {
+    try {
+      const userId = req.user?.id;
+      const email = req.user?.email || '';
+
+      if (!userId) {
+        res.status(401).json({ success: false, error: 'Unauthorized.' });
+        return;
+      }
+
+      const { itemType, currentItem, category } = req.body || {};
+      const profile: any = await getHealthProfile(userId);
+
+      const cuisine = profile?.cuisine || 'Indian/South Asian';
+      const budget = profile?.budget || 'Budget-Friendly';
+      const equipmentStr = Array.isArray(profile?.equipment) ? profile.equipment.join(', ') : 'Bodyweight Only';
+      const dietStr = Array.isArray(profile?.dietaryRestrictions) ? profile.dietaryRestrictions.join(', ') : 'None';
+
+      const prompt = `You are an expert nutritionist and fitness coach.
+The user wants to swap out the following ${itemType}:
+Current Item to Replace: "${currentItem}" (${category || 'General'})
+
+User Constraints:
+- Cuisine: ${cuisine}
+- Budget: ${budget}
+- Available Equipment: ${equipmentStr}
+- Dietary Restrictions: ${dietStr}
+
+Provide a single, equivalent, healthy replacement ${itemType} item that respects all constraints and budget.
+Return JSON format: { "newItem": "Replacement item description" }`;
+
+      const ai = getGeminiClient();
+      let replacementItem = '';
+
+      if (ai) {
+        try {
+          const response = await ai.models.generateContent({
+            model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+              responseMimeType: 'application/json',
+              responseSchema: {
+                type: Type.OBJECT,
+                properties: { newItem: { type: Type.STRING } },
+                required: ['newItem']
+              }
+            }
+          });
+          if (response.text) {
+            const parsed = JSON.parse(response.text);
+            replacementItem = parsed.newItem;
+          }
+        } catch (e) {
+          console.warn('Gemini Item Swap API call failed:', e);
+        }
+      }
+
+      if (!replacementItem) {
+        if (itemType === 'meal') {
+          replacementItem = cuisine.includes('Indian') ? 'Spiced Moong Dal Khichdi with Curd & Cucumbers' : 'Whole Grain Toast with Hummus & Steamed Greens';
+        } else {
+          replacementItem = equipmentStr.includes('Bodyweight') ? '15 Incline Pushups + 30s Mountain Climbers' : 'Goblet Squats (3 sets of 12 reps)';
+        }
+      }
+
+      res.status(200).json({
+        success: true,
+        newItem: replacementItem
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  };
+
+  app.post('/api/coach/swap-item', requireAuth as any, handleSwapCoachItem);
+  app.post('/coach/swap-item', requireAuth as any, handleSwapCoachItem);
 
   const handleGetCoachPlan = async (req: AuthenticatedRequest, res: any) => {
     try {

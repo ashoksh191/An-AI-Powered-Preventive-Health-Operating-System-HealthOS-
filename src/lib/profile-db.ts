@@ -58,6 +58,11 @@ interface InMemHealthProfile {
   familyHistory: string;
   existingConditions: string;
   goals?: string | null;
+  cuisine?: string | null;
+  budget?: string | null;
+  prepTime?: string | null;
+  equipment?: any;
+  dietaryRestrictions?: any;
   createdAt: Date;
   updatedAt: Date;
 }

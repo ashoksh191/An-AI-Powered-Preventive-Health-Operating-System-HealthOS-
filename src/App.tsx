@@ -50,7 +50,50 @@ export default function App() {
   const [regSleep, setRegSleep] = useState<number>(7.5);
   const [regExercise, setRegExercise] = useState<number>(30);
   const [regStress, setRegStress] = useState<string>('Medium');
-  
+  const [completedTasks, setCompletedTasks] = useState<Record<string, boolean>>({});
+  const [swappingItemKey, setSwappingItemKey] = useState<string | null>(null);
+
+  const toggleTaskCompleted = (key: string) => {
+    setCompletedTasks(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleSwapItem = async (itemType: 'meal' | 'exercise', currentItem: string, category: string, planField: 'mealPlan' | 'workoutPlan') => {
+    if (!token || !coachPlan) return;
+    const itemKey = `${planField}-${currentItem}`;
+    setSwappingItemKey(itemKey);
+    try {
+      const res = await fetch('/api/coach/swap-item', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ itemType, currentItem, category })
+      });
+      const data = await parseSafeJson(res);
+      if (data.success && data.newItem) {
+        const updatedText = coachPlan[planField].replace(currentItem, data.newItem);
+        setCoachPlan({
+          ...coachPlan,
+          [planField]: updatedText
+        });
+      }
+    } catch (e) {
+      console.warn('Item swap failed:', e);
+    } finally {
+      setSwappingItemKey(null);
+    }
+  };
+
+  const parseProtocolItems = (text: string) => {
+    if (!text) return [];
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0 && !l.startsWith('###'));
+    return lines.map((line, idx) => {
+      const cleanLine = line.replace(/^[-*•]\s*/, '').replace(/\*\*/g, '');
+      return { id: idx, raw: line, clean: cleanLine };
+    });
+  };
+
   // Chat state
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -1138,38 +1181,130 @@ export default function App() {
                   <div id="ai-action-plan-card" className="bg-slate-950 border border-indigo-900/80 p-6 rounded-2xl space-y-4 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
                     
-                    <div className="flex items-center justify-between border-b border-slate-800 pb-3 z-10">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-3 z-10 flex-wrap gap-2">
                       <div className="flex items-center gap-2.5">
                         <div className="p-2.5 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-600/20">
                           <Sparkles className="w-5 h-5" />
                         </div>
                         <div>
-                          <h3 className="text-sm font-bold text-white tracking-tight">Your Personalized AI Action Plan & Daily Protocol</h3>
-                          <p className="text-[11px] text-slate-400">Tailored specifically to your Health Assessment Vitals and Goals</p>
+                          <h3 className="text-sm font-bold text-white tracking-tight">Constraint-Aware AI Protocol & Daily Plan</h3>
+                          <p className="text-[11px] text-slate-400">Personalized strictly to your Vitals, Cuisine, Budget & Equipment constraints</p>
                         </div>
                       </div>
 
                       <span className="text-[10px] font-mono text-indigo-300 font-bold bg-indigo-950 px-2.5 py-1 rounded-full border border-indigo-800/60 uppercase">
-                        Goal-Aligned Plan
+                        Constraint-Aware Protocol
                       </span>
                     </div>
 
+                    {/* Active Constraint Badges Pill Bar */}
+                    <div className="flex items-center gap-2 flex-wrap text-xs bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl z-10">
+                      <span className="text-slate-400 font-bold text-[11px] flex items-center gap-1">
+                        🏷️ Active Constraints:
+                      </span>
+                      <span className="px-2.5 py-0.5 bg-indigo-950 text-indigo-300 border border-indigo-800/60 rounded-md font-bold text-[11px]">
+                        {initialProfile?.cuisine ? `🇮🇳 ${initialProfile.cuisine}` : '🇮🇳 Indian/South Asian'}
+                      </span>
+                      <span className="px-2.5 py-0.5 bg-emerald-950 text-emerald-300 border border-emerald-800/60 rounded-md font-bold text-[11px]">
+                        {initialProfile?.budget ? `💰 ${initialProfile.budget}` : '💰 Budget-Friendly'}
+                      </span>
+                      <span className="px-2.5 py-0.5 bg-amber-950 text-amber-300 border border-amber-800/60 rounded-md font-bold text-[11px]">
+                        {initialProfile?.prepTime ? `⚡ ${initialProfile.prepTime}` : '⚡ Quick (< 15m)'}
+                      </span>
+                      <span className="px-2.5 py-0.5 bg-rose-950 text-rose-300 border border-rose-800/60 rounded-md font-bold text-[11px]">
+                        {Array.isArray(initialProfile?.equipment) ? `🏋️ ${initialProfile.equipment.join(', ')}` : '🏋️ Bodyweight Only'}
+                      </span>
+                    </div>
+
+                    {/* Protocol Cards with Interactive Checklist & Swap Item Buttons */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 z-10">
-                      <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-2">
-                        <span className="text-xs font-bold text-emerald-400 flex items-center gap-2">
-                          🥗 1. Personalized Nutrition & Meal Protocol
-                        </span>
-                        <div className="text-xs text-slate-200 whitespace-pre-line leading-relaxed font-mono text-[11px]">
-                          {coachPlan.mealPlan}
+                      {/* Nutrition Protocol */}
+                      <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                          <span className="text-xs font-bold text-emerald-400 flex items-center gap-2">
+                            🥗 1. Nutrition & Meal Protocol
+                          </span>
+                          <span className="text-[10px] text-slate-500 font-mono">Check items to track</span>
+                        </div>
+
+                        <div className="space-y-2">
+                          {parseProtocolItems(coachPlan.mealPlan).map((item, idx) => {
+                            const itemKey = `meal-${idx}-${item.clean}`;
+                            const isDone = Boolean(completedTasks[itemKey]);
+                            const isSwapping = swappingItemKey === `mealPlan-${item.raw}`;
+
+                            return (
+                              <div 
+                                key={idx} 
+                                className={`p-2.5 rounded-lg border transition-all flex items-center justify-between gap-2.5 ${
+                                  isDone ? 'bg-emerald-950/30 border-emerald-900/40 text-emerald-300/80 line-through' : 'bg-slate-950 border-slate-800/80 text-slate-200'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2.5 cursor-pointer flex-grow min-w-0" onClick={() => toggleTaskCompleted(itemKey)}>
+                                  <div className={`w-4 h-4 rounded flex items-center justify-center text-[10px] shrink-0 font-bold transition-all ${isDone ? 'bg-emerald-500 text-slate-950' : 'border border-slate-700 bg-slate-900'}`}>
+                                    {isDone && '✓'}
+                                  </div>
+                                  <span className="text-[11px] leading-relaxed break-words">{item.clean}</span>
+                                </div>
+                                
+                                <button
+                                  type="button"
+                                  onClick={() => handleSwapItem('meal', item.raw, 'Nutrition', 'mealPlan')}
+                                  disabled={isSwapping}
+                                  className="px-2 py-1 bg-slate-900 hover:bg-indigo-950 border border-slate-700 hover:border-indigo-800 text-slate-300 hover:text-indigo-300 rounded-md text-[10px] font-bold flex items-center gap-1 shrink-0 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                                  title="Swap out this meal with AI alternative"
+                                >
+                                  <RefreshCw className={`w-3 h-3 ${isSwapping ? 'animate-spin text-emerald-400' : 'text-indigo-400'}`} />
+                                  <span>{isSwapping ? 'Swapping...' : 'Swap Item'}</span>
+                                </button>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
 
-                      <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-2">
-                        <span className="text-xs font-bold text-teal-400 flex items-center gap-2">
-                          🏋️ 2. Target Workout & Physical Activity
-                        </span>
-                        <div className="text-xs text-slate-200 whitespace-pre-line leading-relaxed font-mono text-[11px]">
-                          {coachPlan.workoutPlan}
+                      {/* Workout Protocol */}
+                      <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                          <span className="text-xs font-bold text-teal-400 flex items-center gap-2">
+                            🏋️ 2. Target Workout & Exercise Routine
+                          </span>
+                          <span className="text-[10px] text-slate-500 font-mono">Check items to track</span>
+                        </div>
+
+                        <div className="space-y-2">
+                          {parseProtocolItems(coachPlan.workoutPlan).map((item, idx) => {
+                            const itemKey = `workout-${idx}-${item.clean}`;
+                            const isDone = Boolean(completedTasks[itemKey]);
+                            const isSwapping = swappingItemKey === `workoutPlan-${item.raw}`;
+
+                            return (
+                              <div 
+                                key={idx} 
+                                className={`p-2.5 rounded-lg border transition-all flex items-center justify-between gap-2.5 ${
+                                  isDone ? 'bg-teal-950/30 border-teal-900/40 text-teal-300/80 line-through' : 'bg-slate-950 border-slate-800/80 text-slate-200'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2.5 cursor-pointer flex-grow min-w-0" onClick={() => toggleTaskCompleted(itemKey)}>
+                                  <div className={`w-4 h-4 rounded flex items-center justify-center text-[10px] shrink-0 font-bold transition-all ${isDone ? 'bg-teal-400 text-slate-950' : 'border border-slate-700 bg-slate-900'}`}>
+                                    {isDone && '✓'}
+                                  </div>
+                                  <span className="text-[11px] leading-relaxed break-words">{item.clean}</span>
+                                </div>
+                                
+                                <button
+                                  type="button"
+                                  onClick={() => handleSwapItem('exercise', item.raw, 'Workout', 'workoutPlan')}
+                                  disabled={isSwapping}
+                                  className="px-2 py-1 bg-slate-900 hover:bg-indigo-950 border border-slate-700 hover:border-indigo-800 text-slate-300 hover:text-indigo-300 rounded-md text-[10px] font-bold flex items-center gap-1 shrink-0 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                                  title="Swap out this exercise with AI alternative"
+                                >
+                                  <RefreshCw className={`w-3 h-3 ${isSwapping ? 'animate-spin text-teal-400' : 'text-indigo-400'}`} />
+                                  <span>{isSwapping ? 'Swapping...' : 'Swap Item'}</span>
+                                </button>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
@@ -1182,12 +1317,12 @@ export default function App() {
 
                       <div className="p-3.5 bg-slate-900 border border-slate-800 rounded-xl text-xs flex flex-col gap-1">
                         <span className="text-[10px] font-mono uppercase text-slate-500 font-bold">Sleep Schedule</span>
-                        <span className="text-xs font-bold text-purple-300 truncate">{coachPlan.sleepSchedule?.split('\n')[0] || '10:30 PM - 6:30 AM'}</span>
+                        <span className="text-xs font-bold text-purple-300 truncate">{coachPlan.sleepSchedule?.split('\n').filter((l: string) => !l.startsWith('###'))[0] || '10:30 PM - 6:30 AM'}</span>
                       </div>
 
                       <div className="p-3.5 bg-slate-900 border border-slate-800 rounded-xl text-xs flex flex-col gap-1">
                         <span className="text-[10px] font-mono uppercase text-slate-500 font-bold">Stress Buffers</span>
-                        <span className="text-xs font-bold text-amber-300 truncate">{coachPlan.stressTips?.split('\n')[0] || '3 physiological sighs'}</span>
+                        <span className="text-xs font-bold text-amber-300 truncate">{coachPlan.stressTips?.split('\n').filter((l: string) => !l.startsWith('###'))[0] || '3 physiological sighs'}</span>
                       </div>
                     </div>
 
