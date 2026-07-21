@@ -696,23 +696,23 @@ export default function App() {
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between px-2.5 py-1.5 bg-slate-900 border border-slate-800/60 rounded">
                           <span className="text-slate-300 font-medium">User Profile</span>
-                          <span className="text-emerald-400 font-semibold font-mono text-[10px]">INJECTED</span>
+                          <span className="text-emerald-400 font-semibold font-mono text-[10px]">CONNECTED</span>
                         </div>
                         <div className="flex items-center justify-between px-2.5 py-1.5 bg-slate-900 border border-slate-800/60 rounded">
                           <span className="text-slate-300 font-medium">Risk Predictions</span>
-                          <span className="text-emerald-400 font-semibold font-mono text-[10px]">INJECTED</span>
+                          <span className="text-emerald-400 font-semibold font-mono text-[10px]">CONNECTED</span>
                         </div>
                         <div className="flex items-center justify-between px-2.5 py-1.5 bg-slate-900 border border-slate-800/60 rounded">
                           <span className="text-slate-300 font-medium">Health Scores</span>
-                          <span className="text-emerald-400 font-semibold font-mono text-[10px]">INJECTED</span>
+                          <span className="text-emerald-400 font-semibold font-mono text-[10px]">CONNECTED</span>
                         </div>
                         <div className="flex items-center justify-between px-2.5 py-1.5 bg-slate-900 border border-slate-800/60 rounded">
                           <span className="text-slate-300 font-medium">Lifestyle Plan</span>
-                          <span className="text-emerald-400 font-semibold font-mono text-[10px]">INJECTED</span>
+                          <span className="text-emerald-400 font-semibold font-mono text-[10px]">CONNECTED</span>
                         </div>
                         <div className="flex items-center justify-between px-2.5 py-1.5 bg-slate-900 border border-slate-800/60 rounded">
                           <span className="text-slate-300 font-medium">Daily Tracking Logs</span>
-                          <span className="text-emerald-400 font-semibold font-mono text-[10px]">INJECTED</span>
+                          <span className="text-emerald-400 font-semibold font-mono text-[10px]">CONNECTED</span>
                         </div>
                       </div>
 
