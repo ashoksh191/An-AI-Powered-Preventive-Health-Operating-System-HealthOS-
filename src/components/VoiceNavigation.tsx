@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Volume2, VolumeX, Sparkles, Navigation, Command, CheckCircle2, HelpCircle } from 'lucide-react';
 
 interface VoiceNavigationProps {
-  onNavigateTab: (tab: 'assessment' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints') => void;
+  onNavigateTab: (tab: 'assessment' | 'copilot' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints') => void;
   onLogout?: () => void;
   onBypass?: () => void;
   onUpdateField?: (field: string, value: any) => void;
@@ -153,7 +153,13 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
       stopListening();
       return;
     }
-    if (cmd.includes('assessment') || cmd.includes('profile') || cmd.includes('vitals') || cmd.includes('असेसमेंट') || cmd.includes('प्रोफाइल')) {
+    if (cmd.includes('copilot') || cmd.includes('doctor') || cmd.includes('physician') || cmd.includes('ehr') || cmd.includes('कॉपालिट')) {
+      onNavigateTab('copilot');
+      const msg = 'Opening Physician AI Co-Pilot Workstation';
+      setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
+      speakFeedback(msg);
+      stopListening();
+    } else if (cmd.includes('assessment') || cmd.includes('profile') || cmd.includes('vitals') || cmd.includes('असेसमेंट') || cmd.includes('प्रोफाइल')) {
       onNavigateTab('assessment');
       const msg = 'Navigating to Health Assessment';
       setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);

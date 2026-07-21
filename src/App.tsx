@@ -3,18 +3,19 @@ import {
   Server, Shield, CheckCircle, Terminal, Heart, Sparkles, Key, 
   Activity, LayoutDashboard, Send, User, MessageSquare, Plus, 
   RefreshCw, LogOut, Smile, Droplets, ArrowRight, UserCheck, AlertCircle,
-  Bell, FileText, ShieldAlert, Users, BarChart3
+  Bell, FileText, ShieldAlert, Users, BarChart3, Stethoscope
 } from 'lucide-react';
 import ProfileForm from './components/ProfileForm';
 import VoiceNavigation from './components/VoiceNavigation';
+import PhysicianCopilot from './components/PhysicianCopilot';
 
 export default function App() {
   const [token, setToken] = useState('dev-token-123');
   const [email, setEmail] = useState('asharofficial10@gmail.com');
   const [password, setPassword] = useState('password123');
   
-  // Tab/Panel selector: 'assessment' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints'
-  const [activeTab, setActiveTab] = useState<'assessment' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints'>('assessment');
+  // Tab/Panel selector: 'assessment' | 'copilot' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints'
+  const [activeTab, setActiveTab] = useState<'assessment' | 'copilot' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints'>('copilot');
   
   // Profile Assessment state
   const [initialProfile, setInitialProfile] = useState<any>(null);
@@ -656,6 +657,14 @@ export default function App() {
             {/* Tabs Bar */}
             <div className="flex items-center gap-2 bg-slate-950/60 border border-slate-800 p-1 rounded-xl self-start flex-wrap">
               <button 
+                onClick={() => setActiveTab('copilot')}
+                className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${activeTab === 'copilot' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/10 font-bold' : 'text-indigo-300 hover:text-white bg-indigo-950/40 border border-indigo-900/60'}`}
+              >
+                <Stethoscope className="w-3.5 h-3.5 text-indigo-400" />
+                Physician Co-Pilot
+              </button>
+
+              <button 
                 onClick={() => setActiveTab('assessment')}
                 className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${activeTab === 'assessment' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/10' : 'text-slate-400 hover:text-slate-200'}`}
               >
@@ -719,6 +728,13 @@ export default function App() {
                 REST APIs Info
               </button>
             </div>
+
+            {/* Tab Contents: Physician AI Co-Pilot Workstation */}
+            {activeTab === 'copilot' && (
+              <div className="flex-grow flex flex-col gap-4 overflow-y-auto">
+                <PhysicianCopilot />
+              </div>
+            )}
 
             {/* Tab Contents: Health Assessment Form */}
             {activeTab === 'assessment' && (

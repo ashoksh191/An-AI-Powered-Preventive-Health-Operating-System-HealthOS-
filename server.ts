@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
 import { getSupabaseClient } from './src/lib/supabase.js';
 import { requireAuth, requireAdmin, AuthenticatedRequest } from './src/middleware/auth.js';
+import { synthesizeClinicalEhr, evaluateDrugInteractions } from './src/lib/copilot-engine.js';
 import { 
   getOrCreateUser as syncOrCreateUser, 
   getHealthProfile, 
@@ -2468,6 +2469,41 @@ Maintaining low-stress routines and daily physical activity significantly reduce
   // Notifications and Reports Service Endpoints
   app.get('/api/notifications', requireAuth as any, handleGetNotifications);
   app.get('/notifications', requireAuth as any, handleGetNotifications);
+
+  // Physician AI Co-Pilot Endpoints
+  app.post('/api/copilot/synthesize-ehr', (req, res) => {
+    try {
+      const ehrData = req.body;
+      const synthesis = synthesizeClinicalEhr(ehrData);
+      res.status(200).json({
+        success: true,
+        synthesis
+      });
+    } catch (err: any) {
+      console.error('Error in EHR synthesis:', err);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to synthesize multi-modal EHR.',
+        details: err.message
+      });
+    }
+  });
+
+  app.post('/api/copilot/drug-interactions', (req, res) => {
+    try {
+      const { medications, allergies, egfr, sysBp } = req.body;
+      const alerts = evaluateDrugInteractions(medications || '', allergies || '', egfr || 90, sysBp || 120);
+      res.status(200).json({
+        success: true,
+        alerts
+      });
+    } catch (err: any) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to evaluate drug interactions.'
+      });
+    }
+  });
   app.post('/api/reports', requireAuth as any, handlePostReports);
   app.post('/reports', requireAuth as any, handlePostReports);
   app.get('/api/reports', requireAuth as any, handleGetReports);
