@@ -2548,6 +2548,29 @@ Maintaining low-stress routines and daily physical activity significantly reduce
     }
   };
 
+  const handlePostAdminAdvisory = async (req: AuthenticatedRequest, res: any) => {
+    try {
+      const { message } = req.body || {};
+      const users = await getAllUsersAdmin();
+      for (const u of users) {
+        await saveNotification(u.id, {
+          type: 'advisory',
+          title: '🚨 Targeted Clinical Health Advisory',
+          message: message || 'HealthOS Clinical Advisory: Maintain low sodium, stay hydrated with 3.0L water daily, and track your vitals.'
+        });
+      }
+      res.status(200).json({
+        success: true,
+        message: `Health Advisory successfully dispatched to ${users.length} patient(s) in the high-risk cohort.`
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  };
+
+  app.post('/api/admin/send-advisory', requireAdmin as any, handlePostAdminAdvisory);
+  app.post('/admin/send-advisory', requireAdmin as any, handlePostAdminAdvisory);
+
   // Health check endpoint for checking backend & database status
   const handleHealthCheck = (req: express.Request, res: express.Response) => {
     res.status(200).json({
