@@ -23,6 +23,7 @@ export default function App() {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileSaveSuccess, setProfileSaveSuccess] = useState('');
   const [profileSaveError, setProfileSaveError] = useState('');
+  const [coachPlan, setCoachPlan] = useState<any | null>(null);
   
   // Admin state
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
@@ -292,6 +293,18 @@ export default function App() {
             body: JSON.stringify(formData)
           });
         } catch (e) {}
+
+        try {
+          const coachRes = await fetch('/api/coach/plan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(formData)
+          });
+          const coachData = await parseSafeJson(coachRes);
+          if (coachData.success && coachData.plan) {
+            setCoachPlan(coachData.plan);
+          }
+        } catch (ce) {}
 
         loadAdminDashboard(token);
         fetchNotifications(token);
@@ -907,9 +920,21 @@ export default function App() {
             {activeTab === 'assessment' && (
               <div className="flex-grow flex flex-col gap-4 overflow-y-auto">
                 {profileSaveSuccess && (
-                  <div className="p-3 bg-emerald-950/60 border border-emerald-800/80 text-emerald-300 rounded-xl text-xs flex items-center gap-2 shadow-lg">
-                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>{profileSaveSuccess}</span>
+                  <div className="p-4 bg-emerald-950/80 border border-emerald-800/80 text-emerald-300 rounded-2xl text-xs flex items-center justify-between gap-3 shadow-xl">
+                    <div className="flex items-center gap-2 font-bold">
+                      <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
+                      <span>{profileSaveSuccess}</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const el = document.getElementById('ai-action-plan-card');
+                        el?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shadow-md shadow-emerald-500/20 shrink-0"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 fill-slate-950/20" />
+                      View What To Do Next (AI Action Plan)
+                    </button>
                   </div>
                 )}
                 {profileSaveError && (
@@ -923,6 +948,94 @@ export default function App() {
                   onSubmit={handleProfileSubmit} 
                   isLoading={isSavingProfile} 
                 />
+
+                {/* Personalized AI Action Plan Card */}
+                {coachPlan && (
+                  <div id="ai-action-plan-card" className="bg-slate-950 border border-indigo-900/80 p-6 rounded-2xl space-y-4 shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+                    
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-3 z-10">
+                      <div className="flex items-center gap-2.5">
+                        <div className="p-2.5 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-600/20">
+                          <Sparkles className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-bold text-white tracking-tight">Your Personalized AI Action Plan & Daily Protocol</h3>
+                          <p className="text-[11px] text-slate-400">Tailored specifically to your Health Assessment Vitals and Goals</p>
+                        </div>
+                      </div>
+
+                      <span className="text-[10px] font-mono text-indigo-300 font-bold bg-indigo-950 px-2.5 py-1 rounded-full border border-indigo-800/60 uppercase">
+                        Goal-Aligned Plan
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 z-10">
+                      <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-2">
+                        <span className="text-xs font-bold text-emerald-400 flex items-center gap-2">
+                          🥗 1. Personalized Nutrition & Meal Protocol
+                        </span>
+                        <div className="text-xs text-slate-200 whitespace-pre-line leading-relaxed font-mono text-[11px]">
+                          {coachPlan.mealPlan}
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-2">
+                        <span className="text-xs font-bold text-teal-400 flex items-center gap-2">
+                          🏋️ 2. Target Workout & Physical Activity
+                        </span>
+                        <div className="text-xs text-slate-200 whitespace-pre-line leading-relaxed font-mono text-[11px]">
+                          {coachPlan.workoutPlan}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3 z-10">
+                      <div className="p-3.5 bg-slate-900 border border-slate-800 rounded-xl text-xs flex flex-col gap-1">
+                        <span className="text-[10px] font-mono uppercase text-slate-500 font-bold">Daily Water Target</span>
+                        <span className="text-base font-bold text-cyan-400">{coachPlan.waterGoal || 2.8} Liters</span>
+                      </div>
+
+                      <div className="p-3.5 bg-slate-900 border border-slate-800 rounded-xl text-xs flex flex-col gap-1">
+                        <span className="text-[10px] font-mono uppercase text-slate-500 font-bold">Sleep Schedule</span>
+                        <span className="text-xs font-bold text-purple-300 truncate">{coachPlan.sleepSchedule?.split('\n')[0] || '10:30 PM - 6:30 AM'}</span>
+                      </div>
+
+                      <div className="p-3.5 bg-slate-900 border border-slate-800 rounded-xl text-xs flex flex-col gap-1">
+                        <span className="text-[10px] font-mono uppercase text-slate-500 font-bold">Stress Buffers</span>
+                        <span className="text-xs font-bold text-amber-300 truncate">{coachPlan.stressTips?.split('\n')[0] || '3 physiological sighs'}</span>
+                      </div>
+                    </div>
+
+                    {/* Action Navigation Buttons */}
+                    <div className="flex items-center justify-between border-t border-slate-800 pt-4 z-10">
+                      <span className="text-xs font-semibold text-slate-400">Next Steps & Daily Control:</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setActiveTab('chat')}
+                          className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-indigo-600/10"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          Ask AI Chatbot
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('logs')}
+                          className="px-3.5 py-2 bg-teal-600 hover:bg-teal-500 text-slate-950 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-teal-500/10"
+                        >
+                          <Activity className="w-3.5 h-3.5" />
+                          Log Today's Vitals
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('copilot')}
+                          className="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-purple-600/10"
+                        >
+                          <Stethoscope className="w-3.5 h-3.5" />
+                          Physician Copilot
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
