@@ -57,6 +57,7 @@ interface InMemHealthProfile {
   stress: string;
   familyHistory: string;
   existingConditions: string;
+  goals?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -417,6 +418,7 @@ export async function createHealthProfile(userId: string, data: {
   stress: string;
   familyHistory: string;
   existingConditions: string;
+  goals?: string;
 }) {
   const bmiValue = calculateBMI(data.weight, data.height);
   const prisma = getPrismaClient();
