@@ -2024,6 +2024,8 @@ Ensure all text descriptions are written in polished, supportive, and motivating
       const systemInstruction = `You are a highly personalized AI Health Chat Assistant.
 Your goal is to provide insightful, empathetic, encouraging, and medically-grounded health and lifestyle feedback to the user based on their specific health profile, prediction risks, health scores, and lifestyle logs.
 
+LANGUAGE FLEXIBILITY: You are fluent in English, Hindi (हिंदी), and Hinglish (Hindi written in Roman/English script). If the user chats with you in Hindi or Hinglish, answer them naturally in fluent Hindi/Hinglish with health advice tailored to Indian lifestyles and diet!
+
 === USER HEALTH PROFILE ===
 ${profileStr}
 

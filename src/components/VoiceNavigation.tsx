@@ -63,37 +63,37 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass }: V
   };
 
   const processVoiceCommand = (cmd: string) => {
-    if (cmd.includes('assessment') || cmd.includes('profile') || cmd.includes('vitals')) {
+    if (cmd.includes('assessment') || cmd.includes('profile') || cmd.includes('vitals') || cmd.includes('असेसमेंट') || cmd.includes('प्रोफाइल')) {
       onNavigateTab('assessment');
       const msg = 'Navigating to Health Assessment';
       setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
       speakFeedback(msg);
       stopListening();
-    } else if (cmd.includes('chat') || cmd.includes('companion') || cmd.includes('assistant') || cmd.includes('ai')) {
+    } else if (cmd.includes('chat') || cmd.includes('companion') || cmd.includes('assistant') || cmd.includes('ai') || cmd.includes('चैट') || cmd.includes('बात')) {
       onNavigateTab('chat');
       const msg = 'Opening AI Chat Companion';
       setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
       speakFeedback(msg);
       stopListening();
-    } else if (cmd.includes('logs') || cmd.includes('tracker') || cmd.includes('daily')) {
+    } else if (cmd.includes('logs') || cmd.includes('tracker') || cmd.includes('daily') || cmd.includes('लॉग्स') || cmd.includes('ट्रैकर')) {
       onNavigateTab('logs');
       const msg = 'Opening Daily Health Tracker';
       setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
       speakFeedback(msg);
       stopListening();
-    } else if (cmd.includes('notifications') || cmd.includes('alerts')) {
+    } else if (cmd.includes('notifications') || cmd.includes('alerts') || cmd.includes('नोटिफिकेशन')) {
       onNavigateTab('notifications');
       const msg = 'Opening Notifications';
       setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
       speakFeedback(msg);
       stopListening();
-    } else if (cmd.includes('reports') || cmd.includes('weekly')) {
+    } else if (cmd.includes('reports') || cmd.includes('weekly') || cmd.includes('रिपोर्ट')) {
       onNavigateTab('reports');
       const msg = 'Opening Weekly Reports';
       setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
       speakFeedback(msg);
       stopListening();
-    } else if (cmd.includes('admin') || cmd.includes('workspace') || cmd.includes('analytics')) {
+    } else if (cmd.includes('admin') || cmd.includes('workspace') || cmd.includes('analytics') || cmd.includes('एडमिन')) {
       onNavigateTab('admin');
       const msg = 'Navigating to Admin Workspace';
       setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
@@ -105,7 +105,7 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass }: V
       setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
       speakFeedback(msg);
       stopListening();
-    } else if (cmd.includes('logout') || cmd.includes('sign out')) {
+    } else if (cmd.includes('logout') || cmd.includes('sign out') || cmd.includes('लॉगआउट')) {
       if (onLogout) onLogout();
       const msg = 'Logging out of session';
       setFeedback(`Recognized: "${cmd}" ➔ ${msg}`);
