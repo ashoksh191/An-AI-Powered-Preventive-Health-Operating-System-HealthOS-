@@ -111,16 +111,31 @@ export default function App() {
     }
   };
 
+  const stopVoicePlayback = () => {
+    if (!('speechSynthesis' in window)) return;
+    setSpeakingMsgText('');
+    try {
+      window.speechSynthesis.cancel();
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+      setTimeout(() => {
+        try { window.speechSynthesis.cancel(); } catch (e) {}
+      }, 50);
+    } catch (e) {
+      // ignore
+    }
+  };
+
   const speakMessage = (text: string) => {
     if (!('speechSynthesis' in window)) return;
 
-    if (speakingMsgText === text) {
-      window.speechSynthesis.cancel();
-      setSpeakingMsgText('');
+    if (speakingMsgText === text || (speakingMsgText && window.speechSynthesis.speaking)) {
+      stopVoicePlayback();
       return;
     }
 
-    window.speechSynthesis.cancel();
+    stopVoicePlayback();
 
     // Clean markdown formatting for clear natural voice reading
     const cleanText = text
@@ -141,7 +156,9 @@ export default function App() {
     utterance.onerror = () => setSpeakingMsgText('');
 
     setSpeakingMsgText(text);
-    window.speechSynthesis.speak(utterance);
+    setTimeout(() => {
+      window.speechSynthesis.speak(utterance);
+    }, 80);
   };
 
   // Daily Logging state
@@ -1235,9 +1252,29 @@ export default function App() {
                         </select>
                       </div>
 
+                      {/* Header Stop Audio Button */}
+                      {speakingMsgText && (
+                        <button
+                          type="button"
+                          onClick={stopVoicePlayback}
+                          className="px-2.5 py-1 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg text-[11px] flex items-center gap-1.5 animate-pulse shadow-md cursor-pointer shrink-0"
+                          title="Stop Audio Voice Playback"
+                        >
+                          <VolumeX className="w-3.5 h-3.5" />
+                          <span>Stop Voice</span>
+                        </button>
+                      )}
+
                       <button
                         type="button"
-                        onClick={() => setAutoReadAi(!autoReadAi)}
+                        onClick={() => {
+                          if (autoReadAi) {
+                            stopVoicePlayback();
+                            setAutoReadAi(false);
+                          } else {
+                            setAutoReadAi(true);
+                          }
+                        }}
                         className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all ${
                           autoReadAi 
                             ? 'bg-indigo-600/90 text-white shadow' 
@@ -1293,7 +1330,7 @@ export default function App() {
                             {msg.role !== 'user' && (
                               <button
                                 type="button"
-                                onClick={() => speakMessage(msg.content)}
+                                onClick={() => speakingMsgText === msg.content ? stopVoicePlayback() : speakMessage(msg.content)}
                                 className="mt-2 px-2.5 py-1 bg-indigo-950/90 hover:bg-indigo-900 border border-indigo-800/80 text-indigo-300 rounded-lg text-[10px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
                               >
                                 {speakingMsgText === msg.content ? (
