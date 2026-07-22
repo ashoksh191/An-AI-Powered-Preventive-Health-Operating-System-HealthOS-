@@ -2173,30 +2173,62 @@ export default function App() {
                   </div>
                 ) : (
                   <div className="grid gap-3 overflow-y-auto max-h-[500px] pr-1">
-                    {notifications.map((notif) => (
-                      <div 
-                        key={notif.id} 
-                        className="p-4 bg-slate-900 border border-slate-800/80 rounded-xl flex items-start gap-3.5 hover:border-slate-700/80 transition-all"
-                      >
-                        <div className={`p-2 rounded-lg mt-0.5 shrink-0 ${
-                          notif.type === 'daily_reminder' ? 'bg-amber-950 text-amber-400 border border-amber-900/40' : 'bg-blue-950 text-blue-400 border border-blue-900/40'
-                        }`}>
-                          <Bell className="w-4 h-4" />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2.5">
-                            <h4 className="text-xs font-bold text-slate-200">{notif.title}</h4>
-                            <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-850">
-                              {notif.type === 'daily_reminder' ? 'Daily Reminder' : 'System Alert'}
+                    {notifications.map((notif) => {
+                      const isGhutne = notif.title.includes('Ghutne');
+                      const isPaani = notif.title.includes('Paani');
+                      const isSleep = notif.title.includes('sleep') || notif.title.includes('Sleep');
+                      const isDiet = notif.title.includes('Diet') || notif.title.includes('diet');
+
+                      let cardStyle = 'bg-slate-900 border border-slate-800/80 hover:border-slate-700/80';
+                      let iconStyle = 'bg-blue-950 text-blue-400 border border-blue-900/40';
+                      let badgeText = 'System Alert 💡';
+                      let badgeStyle = 'bg-slate-950 text-slate-400 border border-slate-850';
+
+                      if (isGhutne) {
+                        cardStyle = 'bg-slate-900/50 border border-amber-900/40 hover:border-amber-700/60 shadow-md shadow-amber-950/10';
+                        iconStyle = 'bg-amber-950 text-amber-400 border border-amber-900/40';
+                        badgeText = 'Reality Check ⚠️';
+                        badgeStyle = 'bg-amber-950/40 text-amber-400 border-amber-900/40';
+                      } else if (isPaani) {
+                        cardStyle = 'bg-slate-900/50 border border-rose-900/40 hover:border-rose-700/60 shadow-md shadow-rose-950/10';
+                        iconStyle = 'bg-rose-950 text-rose-400 border border-rose-900/40';
+                        badgeText = 'Spicy Advice 🌶️';
+                        badgeStyle = 'bg-rose-950/40 text-rose-400 border-rose-900/40';
+                      } else if (isSleep) {
+                        cardStyle = 'bg-slate-900/50 border border-indigo-900/40 hover:border-indigo-700/60 shadow-md shadow-indigo-950/10';
+                        iconStyle = 'bg-indigo-950 text-indigo-400 border border-indigo-900/40';
+                        badgeText = 'Sleep Roast 😴';
+                        badgeStyle = 'bg-indigo-950/40 text-indigo-400 border-indigo-900/40';
+                      } else if (isDiet) {
+                        cardStyle = 'bg-slate-900/50 border border-emerald-900/40 hover:border-emerald-700/60 shadow-md shadow-emerald-950/10';
+                        iconStyle = 'bg-emerald-950 text-emerald-400 border border-emerald-900/40';
+                        badgeText = 'Diet Roast 🥗';
+                        badgeStyle = 'bg-emerald-950/40 text-emerald-400 border-emerald-900/40';
+                      }
+
+                      return (
+                        <div 
+                          key={notif.id} 
+                          className={`p-4 rounded-xl flex items-start gap-3.5 transition-all ${cardStyle}`}
+                        >
+                          <div className={`p-2 rounded-lg mt-0.5 shrink-0 ${iconStyle}`}>
+                            <Bell className="w-4 h-4" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2.5">
+                              <h4 className="text-xs font-bold text-slate-200">{notif.title}</h4>
+                              <span className={`text-[10px] uppercase font-mono px-1.5 py-0.5 rounded border ${badgeStyle}`}>
+                                {badgeText}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 leading-relaxed">{notif.message}</p>
+                            <span className="block text-[9px] text-slate-500 font-mono mt-1">
+                              {new Date(notif.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-400 leading-relaxed">{notif.message}</p>
-                          <span className="block text-[9px] text-slate-500 font-mono mt-1">
-                            {new Date(notif.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                          </span>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>

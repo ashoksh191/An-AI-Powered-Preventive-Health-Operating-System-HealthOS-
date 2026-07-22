@@ -2439,18 +2439,28 @@ Please use this state to answer the user's health questions or give insights. Ma
         const defaultReminders = [
           {
             type: 'daily_reminder',
-            title: 'Water Hydration Goal 💧',
-            message: 'Your body needs hydration. Remember to drink 2.8 Liters of water today to keep your organs flushed and energetic!'
+            title: 'Ghutne bolenge \'Bye Bye\' 60 se pehle! 🏃‍♂️',
+            message: 'Longevity enthusiast, kya aaj ka walk target complete hua? Chalo, lazy scrolling band karo aur thoda brisk walk karo warna biological age rocket ki tarah upar bhagegi!'
           },
           {
             type: 'daily_reminder',
-            title: 'Daily Logs Sync Checklist 🏃‍♂️',
-            message: 'Don\'t forget to log your weight, hours of sleep, meal intake, and mood in the Daily Health Tracker panel!'
+            title: 'Paani nahi pee rahe? Jaldi budhe ho jaoge! 💧',
+            message: 'Skin and organs dry ho rahe hain. Chupchaap 1 glass paani piyo aur log karo, warna dynamic health streaks zero ho jayegi!'
+          },
+          {
+            type: 'daily_reminder',
+            title: 'Oye sleep-deprived human! 😴',
+            message: 'Der raat tak phone scroll karna band karo! 7.5 hours ki chain ki neend prapte karo, warna biological clock +5 years penalty jod degi.'
+          },
+          {
+            type: 'daily_reminder',
+            title: 'Diet me momos, aur sapne zero cholesterol ke? 🥗',
+            message: 'Aapke health profile me lipid risk flagged hai. Aaj home-cooked constraint-aware meal khao aur healthy logs update karo!'
           },
           {
             type: 'system',
             title: 'AI Companion Ready 🤖',
-            message: 'Your personal AI Companion has loaded your health profile. Try asking it "What can I improve in my routine?"'
+            message: 'Main aapka smart health companion ready hoon. Click chat and ask "mujhe acidity ho gayi hai kya karu" for instant clinical advice!'
           }
         ];
 
