@@ -2688,7 +2688,7 @@ Provide estimated calories, protein (g), carbs (g), fats (g), clinical suitabili
 
   const handleAnalyzeLabReport = async (req: AuthenticatedRequest, res: any) => {
     try {
-      const { labText } = req.body || {};
+      const { labText, imageBase64 } = req.body || {};
       const userId = req.user?.id || 'dev-user-id';
       const profile: any = await getHealthProfile(userId);
 
@@ -2698,8 +2698,7 @@ Provide estimated calories, protein (g), carbs (g), fats (g), clinical suitabili
       if (ai) {
         try {
           const prompt = `You are a clinical laboratory pathologist and AI diagnostician.
-Analyze these laboratory test results:
-"${labText}"
+Analyze these laboratory test results: "${labText || 'Uploaded laboratory test report image/document'}".
 
 User Context:
 - Age: ${profile?.age || 35}, Gender: ${profile?.gender || 'Male'}
@@ -2708,9 +2707,30 @@ User Context:
 Extract and evaluate key biomarkers (HbA1c, Fasting Glucose, Total Cholesterol, HDL, LDL, Triglycerides, TSH, Serum Creatinine, Hemoglobin).
 Return JSON with list of biomarkers (name, value, unit, status: Normal|Borderline|High|Low, summary), overall Health Status, and 3 Clinical Action Steps.`;
 
+          const contents: any[] = [];
+          if (imageBase64) {
+            const cleanBase64 = imageBase64.replace(/^data:(image\/\w+|application\/pdf);base64,/, '');
+            let mimeType = 'image/jpeg';
+            if (imageBase64.includes('application/pdf')) {
+              mimeType = 'application/pdf';
+            }
+            contents.push({
+              role: 'user',
+              parts: [
+                { inlineData: { mimeType, data: cleanBase64 } },
+                { text: prompt }
+              ]
+            });
+          } else {
+            contents.push({
+              role: 'user',
+              parts: [{ text: prompt }]
+            });
+          }
+
           const response = await ai.models.generateContent({
             model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
-            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            contents,
             config: {
               responseMimeType: 'application/json',
               responseSchema: {

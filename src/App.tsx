@@ -106,6 +106,8 @@ export default function App() {
   const [mealAnalysisResult, setMealAnalysisResult] = useState<any | null>(null);
 
   const [labReportText, setLabReportText] = useState(`Fasting Blood Sugar: 118 mg/dL\nHbA1c: 5.9%\nTotal Cholesterol: 215 mg/dL\nHDL: 52 mg/dL\nLDL: 142 mg/dL\nTriglycerides: 165 mg/dL\nSerum Creatinine: 0.9 mg/dL\nTSH: 2.4 uIU/mL`);
+  const [labReportFileBase64, setLabReportFileBase64] = useState<string | null>(null);
+  const [labReportFileName, setLabReportFileName] = useState('');
   const [isAnalyzingLab, setIsAnalyzingLab] = useState(false);
   const [labAnalysisResult, setLabAnalysisResult] = useState<any | null>(null);
 
@@ -147,7 +149,10 @@ export default function App() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ labText: labReportText })
+        body: JSON.stringify({ 
+          labText: labReportText,
+          imageBase64: labReportFileBase64
+        })
       });
       const data = await parseSafeJson(res);
       if (data.success && data.analysis) {
@@ -1395,13 +1400,38 @@ export default function App() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-3">
-                      <label className="text-xs font-semibold text-slate-300">Paste Raw Laboratory Report Text:</label>
+                      <label className="text-xs font-semibold text-slate-300">Option 1: Paste Raw Laboratory Report Text:</label>
                       <textarea
-                        rows={7}
+                        rows={5}
                         value={labReportText}
                         onChange={(e) => setLabReportText(e.target.value)}
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 font-mono focus:outline-none focus:border-purple-500 leading-relaxed"
                       />
+
+                      <label className="text-xs font-semibold text-slate-300 block">Option 2: Browse & Upload Report Image / PDF Document</label>
+                      <div className="p-4 border-2 border-dashed border-slate-800 rounded-xl text-center cursor-pointer hover:border-purple-500 transition-all bg-slate-900/50">
+                        <input 
+                          type="file" 
+                          accept="image/*,application/pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setLabReportFileName(file.name);
+                              const reader = new FileReader();
+                              reader.onloadend = () => setLabReportFileBase64(reader.result as string);
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="hidden"
+                          id="lab-report-file-input"
+                        />
+                        <label htmlFor="lab-report-file-input" className="cursor-pointer flex flex-col items-center gap-2">
+                          <Upload className="w-6 h-6 text-purple-400" />
+                          <span className="text-xs font-semibold text-slate-300">
+                            {labReportFileBase64 ? `✓ Attached: ${labReportFileName}` : 'Click to Browse Image or PDF Report'}
+                          </span>
+                        </label>
+                      </div>
 
                       <button
                         type="button"
