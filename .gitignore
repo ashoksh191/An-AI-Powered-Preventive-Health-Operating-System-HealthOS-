@@ -6,3 +6,8 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Presentation & Pitch Deck files
+HealthOS_Pitch_Deck.html
+HealthOS_Pitch_Deck.pptx
+
