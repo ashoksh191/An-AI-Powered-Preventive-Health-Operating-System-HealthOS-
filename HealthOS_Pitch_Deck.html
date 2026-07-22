@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthOS - Pitch Deck Presentation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #020617;
+      --card-bg: rgba(15, 23, 42, 0.65);
+      --border-color: rgba(99, 102, 241, 0.2);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #6366f1;
+      --primary-glow: rgba(99, 102, 241, 0.4);
+      --accent-emerald: #10b981;
+      --accent-rose: #f43f5e;
+      --accent-purple: #a855f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    /* Ambient background glows */
+    .glow-1 {
+      position: absolute;
+      top: -10%;
+      left: -10%;
+      width: 50vw;
+      height: 50vh;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+      filter: blur(100px);
+    }
+
+    .glow-2 {
+      position: absolute;
+      bottom: -10%;
+      right: -10%;
+      width: 50vw;
+      height: 50vh;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+      filter: blur(100px);
+    }
+
+    /* Slide container */
+    .presentation-container {
+      width: 90vw;
+      max-width: 1200px;
+      height: 80vh;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      backdrop-filter: blur(16px);
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .slide {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 4rem;
+      height: 100%;
+      width: 100%;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      text-align: center;
+    }
+
+    .slide.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    /* Slide content styling */
+    h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      background: linear-gradient(to right, #ffffff, #a855f7, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1.5rem;
+      line-height: 1.2;
+    }
+
+    h2 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0.5rem;
+      align-self: flex-start;
+      text-align: left;
+      width: 100%;
+    }
+
+    h3 {
+      font-size: 1.3rem;
+      color: var(--primary);
+      margin-bottom: 2rem;
+      font-weight: 600;
+      align-self: flex-start;
+      text-align: left;
+    }
+
+    p.subtitle {
+      font-size: 1.4rem;
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+    }
+
+    /* Grid layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-cols: 1fr 1fr;
+      gap: 2.5rem;
+      width: 100%;
+      text-align: left;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-cols: repeat(3, 1fr);
+      gap: 1.5rem;
+      width: 100%;
+      text-align: left;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 1.8rem;
+      border-radius: 16px;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #ffffff;
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-content {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Custom bullet lists */
+    ul {
+      list-style: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    li {
+      font-size: 1.15rem;
+      margin-bottom: 1.2rem;
+      padding-left: 2rem;
+      position: relative;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    li::before {
+      content: "✦";
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    strong {
+      color: #ffffff;
+    }
+
+    /* Comparison Table styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.95rem;
+    }
+
+    th {
+      font-weight: 600;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    td {
+      color: var(--text-muted);
+    }
+
+    .highlight-cell {
+      color: var(--accent-emerald);
+      font-weight: 600;
+    }
+
+    /* Navigation controls overlay */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 3rem;
+      border-top: 1px solid var(--border-color);
+      background: rgba(2, 6, 23, 0.8);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .nav-btn {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 0.6rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-family: inherit;
+      transition: background 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+
+    .nav-btn:hover {
+      background: #4f46e5;
+      transform: translateY(-1px);
+    }
+
+    .nav-btn:disabled {
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.2);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .slide-progress {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    .badge-rose {
+      background: rgba(244, 63, 94, 0.15);
+      border-color: var(--accent-rose);
+      color: var(--accent-rose);
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+
+  <div class="presentation-container">
+    <!-- SLIDE 1: Title -->
+    <div class="slide active">
+      <span class="badge">Innovation Pitch</span>
+      <h1>HealthOS</h1>
+      <p class="subtitle">The AI-Powered Preventive Health Operating System</p>
+      <div style="margin-top: 1rem; text-align: center;" class="card">
+        <p style="font-weight: 600; color: #ffffff; font-size: 1.1rem; margin-bottom: 0.5rem;">Presented by: Team BioSynth</p>
+        <p style="font-size: 0.9rem; color: var(--text-muted);">Redefining Healthcare from Reactive Treatment to Preventive Longevity</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Problem Statement -->
+    <div class="slide">
+      <h2>The Problem Statement</h2>
+      <h3>The Reactive Healthcare Epidemic</h3>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><span style="color: var(--accent-rose);">✕</span> Reactive Treatments</div>
+          <div class="card-content">Modern healthcare intervenes only after disease onset. This reactive approach is highly expensive, stressful, and results in poorer outcomes.</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span style="color: var(--accent-rose);">✕</span> One-Size-Fits-All Nutrition</div>
+          <div class="card-content">Standard diet trackers assume expensive, hard-to-source ingredients and ignore local regional cuisine, budgets, and prep-time restrictions.</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span style="color: var(--accent-rose);">✕</span> Wearable & Data Silos</div>
+          <div class="card-content">Health statistics, blood panels, and radiology results remain isolated in paperwork, missing critical early-stage preventative correlations.</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span style="color: var(--accent-rose);">✕</span> Lack of Local Language Accessibility</div>
+          <div class="card-content">Advanced health coaching algorithms are primarily locked behind high cost walls and english-only interfaces, ignoring non-english cohorts.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: The Solution -->
+    <div class="slide">
+      <h2>The Solution</h2>
+      <h3>Introducing HealthOS Ecosystem</h3>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title"><span style="color: var(--accent-emerald);">✓</span> Constraint-Aware Protocols</div>
+          <div class="card-content">AI generates 1-day personalized health protocols that adapt strictly to local cuisine budgets, prep times, and home gym equipment.</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span style="color: var(--accent-emerald);">✓</span> Integrated Diagnostics</div>
+          <div class="card-content">Physician Co-pilot, Blood Biomarker Extraction, and Radiology AI Summarization working in one unified, collaborative dashboard.</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span style="color: var(--accent-emerald);">✓</span> Multi-Language Voice Assistant</div>
+          <div class="card-content">Hands-free voice recognition & text-to-speech assistant operating in 12 regional languages (including Hinglish and Hindi).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Advanced AI Use Cases -->
+    <div class="slide">
+      <h2>AI & Machine Learning Capabilities</h2>
+      <h3>High-Performance Integration of Gemini AI</h3>
+      <div class="grid-2">
+        <ul style="display: flex; flex-direction: column; justify-content: center; gap: 0.5rem;">
+          <li><strong>AI Longevity Clock Engine:</strong> Clinically grounded calculations mapping BMI, exercise, sleep, and lifestyle to output <strong>Biological Age</strong> vs Chronological Age.</li>
+          <li><strong>Vision AI Meal Analyzer:</strong> Gemini Vision API scans food photos to extract calories, protein, carbs, fats, and rate clinical suitability.</li>
+          <li><strong>Lab Report Clinical Biomarker Analyzer:</strong> Auto-extracts HbA1c, lipids, TSH, creatinine levels, flagging out-of-range clinical anomalies in color-coded badges.</li>
+          <li><strong>Differential Diagnosis Copilot:</strong> Real-time clinical recommendations and differential lists for medical practitioners.</li>
+        </ul>
+        <div class="card" style="display: flex; flex-direction: column; justify-content: center; background: rgba(99, 102, 241, 0.05); border-color: rgba(99, 102, 241, 0.2);">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent-purple); margin-bottom: 0.5rem;">SYSTEM_PROMPT_ENFORCEMENT:</div>
+          <p style="font-size: 0.9rem; line-height: 1.6; color: var(--text-muted);">
+            "Strictly analyze patient vitals. If budget-friendly is selected, restrict nutrition to local regional pantry staples (Moong Dal, Paneer, Oats, seasonal fruits). If bodyweight only is selected, forbid dumbbells/gym machines."
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Tech Stack -->
+    <div class="slide">
+      <h2>Technological Architecture</h2>
+      <h3>Enterprise Scale, Modern Stack</h3>
+      <div class="grid-3" style="margin-top: 1rem;">
+        <div class="card">
+          <div class="card-title" style="color: var(--primary);">🌐 FRONTEND</div>
+          <ul style="font-size: 0.85rem; margin-top: 0.5rem;">
+            <li style="margin-bottom: 0.5rem;">React 18 & TypeScript</li>
+            <li style="margin-bottom: 0.5rem;">Vite & TailwindCSS</li>
+            <li style="margin-bottom: 0.5rem;">Lucide Icons & Responsive Grids</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-purple);">⚙️ BACKEND</div>
+          <ul style="font-size: 0.85rem; margin-top: 0.5rem;">
+            <li style="margin-bottom: 0.5rem;">Node.js & Express</li>
+            <li style="margin-bottom: 0.5rem;">REST API Endpoints</li>
+            <li style="margin-bottom: 0.5rem;">CJS Production Bundler</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-emerald);">🗄️ DATABASE & AI</div>
+          <ul style="font-size: 0.85rem; margin-top: 0.5rem;">
+            <li style="margin-bottom: 0.5rem;">PostgreSQL & Prisma ORM</li>
+            <li style="margin-bottom: 0.5rem;">Gemini 2.5 Flash API</li>
+            <li style="margin-bottom: 0.5rem;">Web Speech API (STT & TTS)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: Revenue Model -->
+    <div class="slide">
+      <h2>Revenue Generation & Viability</h2>
+      <h3>Monetization and Growth Model</h3>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-emerald);">B2C Subscription (Freemium)</div>
+          <div class="card-content" style="margin-top: 0.5rem;">
+            <strong>Free Plan:</strong> Basic vitals logging, biological age tracking, and standard chat assistant.<br><br>
+            <strong>Pro Plan ($9.99/mo):</strong> Vision AI plate scanning, blood biomarker extraction, and infinite single-item AI recipe/workout swaps.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color: var(--primary);">B2B SaaS / Enterprise License</div>
+          <div class="card-content" style="margin-top: 0.5rem;">
+            <strong>Physician Copilot Integration:</strong> Subscriptions for clinics/hospitals to reduce SOAP charting documentation time.<br><br>
+            <strong>Insurance Partnerships:</strong> Cohort risk demographic insights to lower claims by rewarding preventive health outcomes.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: Future Roadmap -->
+    <div class="slide">
+      <h2>Future Growth Roadmap</h2>
+      <h3>Strategic Expansion Strategy</h3>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-purple);">Short-Term Plans (0 - 6 Months)</div>
+          <ul style="font-size: 0.9rem; margin-top: 0.5rem;">
+            <li style="margin-bottom: 0.5rem;">Wearable integrations (Fitbit, Apple HealthKit API, Google Fit).</li>
+            <li style="margin-bottom: 0.5rem;">Pilot launch with 10 diagnostic lab networks for automated blood test syncing.</li>
+            <li style="margin-bottom: 0.5rem;">Community health streak gamification to boost user retention.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-rose);">Long-Term Plans (6 - 24 Months)</div>
+          <ul style="font-size: 0.9rem; margin-top: 0.5rem;">
+            <li style="margin-bottom: 0.5rem;">DNA/Genomic clinical models to cross-reference genotype with daily nutrition.</li>
+            <li style="margin-bottom: 0.5rem;">Obtaining FDA/CE certifications for AI differential diagnostics tools.</li>
+            <li style="margin-bottom: 0.5rem;">Full white-labeled integration with premium hospital chains.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: Uniqueness -->
+    <div class="slide">
+      <h2>Competitive Advantage</h2>
+      <h3>Why HealthOS Wins</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Standard Health Apps</th>
+            <th style="color: var(--primary);">HealthOS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Nutrition Personalization</strong></td>
+            <td>Generic calorie counts</td>
+            <td class="highlight-cell">Constraint-Aware (Local Cuisine & Budgets)</td>
+          </tr>
+          <tr>
+            <td><strong>Diagnostic Analytics</strong></td>
+            <td>None (Only manual data tracking)</td>
+            <td class="highlight-cell">Multimodal Vision AI (Meal & Lab reports)</td>
+          </tr>
+          <tr>
+            <td><strong>Clinical Interface</strong></td>
+            <td>B2C Consumer tracker only</td>
+            <td class="highlight-cell">Integrated Physician Copilot & Radiology AI</td>
+          </tr>
+          <tr>
+            <td><strong>Hands-Free Control</strong></td>
+            <td>Touch screen only</td>
+            <td class="highlight-cell">Regional Voice Assistant (12 Languages)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SLIDE 9: Conclusion -->
+    <div class="slide">
+      <span class="badge">Join the Longevity Revolution</span>
+      <h1>Democratizing Longevity</h1>
+      <p class="subtitle" style="max-width: 800px; margin: 0 auto 2rem auto; font-size: 1.1rem; line-height: 1.8;">
+        HealthOS makes precision preventive healthcare accessible to everyone. By utilizing advanced constraint-aware AI and local language support, we shift healthcare from reactive treatment to proactive wellness.
+      </p>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--accent-emerald);">
+        DEPLOYMENT_BRANCH: main • COMPLIANCE: HIPAA Ready
+      </div>
+    </div>
+
+    <!-- NAVIGATION CONTROLS PANEL -->
+    <div class="controls">
+      <button class="nav-btn" id="prev-btn" onclick="prevSlide()">Previous</button>
+      <span class="slide-progress" id="slide-num">SLIDE 1 / 9</span>
+      <button class="nav-btn" id="next-btn" onclick="nextSlide()">Next</button>
+    </div>
+  </div>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const slideNum = document.getElementById('slide-num');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    function updateSlide() {
+      slides.forEach((slide, idx) => {
+        if (idx === currentSlide) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
+      });
+
+      slideNum.textContent = `SLIDE ${currentSlide + 1} / ${slides.length}`;
+      prevBtn.disabled = currentSlide === 0;
+      nextBtn.disabled = currentSlide === slides.length - 1;
+    }
+
+    function nextSlide() {
+      if (currentSlide < slides.length - 1) {
+        currentSlide++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    // Keyboard navigation support
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft') {
+        prevSlide();
+      }
+    });
+
+    updateSlide();
+  </script>
+</body>
+</html>
