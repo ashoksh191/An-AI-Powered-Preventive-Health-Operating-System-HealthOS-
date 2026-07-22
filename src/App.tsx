@@ -802,22 +802,6 @@ export default function App() {
           
           {/* Top Status & Dev Mode Control */}
           <div className="flex items-center gap-2 flex-wrap">
-            <VoiceNavigation 
-              onNavigateTab={setActiveTab} 
-              onLogout={handleLogout} 
-              onBypass={handleUseDevToken}
-              onUpdateField={(field, val) => {
-                setInitialProfile((prev: any) => ({ ...(prev || {}), [field]: val }));
-              }}
-              onSaveProfile={() => {
-                if (initialProfile) handleProfileSubmit(initialProfile);
-              }}
-              onSendChat={(msg) => {
-                setNewMessage(msg);
-                handleSendChat(msg);
-              }}
-            />
-
             {isAuthenticated ? (
               <div className="flex items-center gap-2 bg-indigo-950/40 border border-indigo-900/60 px-3 py-1.5 rounded-lg text-xs">
                 <UserCheck className="w-3.5 h-3.5 text-indigo-400" />

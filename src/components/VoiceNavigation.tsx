@@ -24,7 +24,7 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
-      recognition.interimResults = true;
+      recognition.interimResults = false; // Only finalize voice inputs to reduce unnecessary event updates
       recognition.lang = 'en-US';
 
       recognition.onstart = () => {
@@ -33,12 +33,16 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
       };
 
       recognition.onresult = (event: any) => {
-        let currentTranscript = '';
+        let finalTranscript = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          currentTranscript += event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          }
         }
-        setTranscript(currentTranscript);
-        processVoiceCommand(currentTranscript.toLowerCase());
+        if (finalTranscript.trim()) {
+          setTranscript(finalTranscript.trim());
+          processVoiceCommand(finalTranscript.toLowerCase().trim());
+        }
       };
 
       recognition.onerror = (event: any) => {
@@ -70,8 +74,8 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
     const cleanCmd = cmd.trim();
     if (!cleanCmd) return;
 
-    // 0. Voice Emergency Action ("SOS", "Emergency", "Red Alert", "इमरजेंसी")
-    if (cleanCmd.includes('sos') || cleanCmd.includes('emergency') || cleanCmd.includes('red alert') || cleanCmd.includes('ambulance') || cleanCmd.includes('इमरजेंसी')) {
+    // 0. Voice Emergency Action ("SOS", "Emergency", "Red Alert", "इमरजेंसी", "bachao")
+    if (cleanCmd.includes('sos') || cleanCmd.includes('emergency') || cleanCmd.includes('red alert') || cleanCmd.includes('ambulance') || cleanCmd.includes('इमरजेंसी') || cleanCmd.includes('bachao')) {
       if (onTriggerSos) onTriggerSos();
       const msg = 'Triggering Emergency Paramedic SOS Red Alert!';
       setFeedback(msg);
@@ -82,7 +86,7 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
 
     // 1. Voice Editing: Weight (e.g., "set weight 75" or "weight 75")
     const weightMatch = cleanCmd.match(/(?:set weight|weight is|my weight|weight)\s*(?:to|is)?\s*(\d+(?:\.\d+)?)/);
-    if (weightMatch && !cleanCmd.includes('go to')) {
+    if (weightMatch && !cleanCmd.includes('go to') && !cleanCmd.includes('open')) {
       const val = parseFloat(weightMatch[1]);
       if (onUpdateField) onUpdateField('weight', val);
       onNavigateTab('assessment');
@@ -95,7 +99,7 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
 
     // 2. Voice Editing: Height (e.g., "set height 180" or "height 180")
     const heightMatch = cleanCmd.match(/(?:set height|height is|my height|height)\s*(?:to|is)?\s*(\d+(?:\.\d+)?)/);
-    if (heightMatch && !cleanCmd.includes('go to')) {
+    if (heightMatch && !cleanCmd.includes('go to') && !cleanCmd.includes('open')) {
       const val = parseFloat(heightMatch[1]);
       if (onUpdateField) onUpdateField('height', val);
       onNavigateTab('assessment');
@@ -108,7 +112,7 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
 
     // 3. Voice Editing: Age (e.g., "set age 30" or "i am 30 years old")
     const ageMatch = cleanCmd.match(/(?:set age|age is|i am)\s*(?:to|is)?\s*(\d+)/);
-    if (ageMatch && !cleanCmd.includes('go to')) {
+    if (ageMatch && !cleanCmd.includes('go to') && !cleanCmd.includes('open')) {
       const val = parseInt(ageMatch[1]);
       if (onUpdateField) onUpdateField('age', val);
       onNavigateTab('assessment');
@@ -121,7 +125,7 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
 
     // 4. Voice Editing: Sleep (e.g., "set sleep 8" or "sleep 8 hours")
     const sleepMatch = cleanCmd.match(/(?:set sleep|sleep is)\s*(?:to|is)?\s*(\d+(?:\.\d+)?)/);
-    if (sleepMatch && !cleanCmd.includes('go to')) {
+    if (sleepMatch && !cleanCmd.includes('go to') && !cleanCmd.includes('open')) {
       const val = parseFloat(sleepMatch[1]);
       if (onUpdateField) onUpdateField('sleep', val);
       onNavigateTab('assessment');
@@ -134,7 +138,7 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
 
     // 5. Voice Editing: Exercise (e.g., "set exercise 45" or "exercise 45 mins")
     const exerciseMatch = cleanCmd.match(/(?:set exercise|exercise is)\s*(?:to|is)?\s*(\d+)/);
-    if (exerciseMatch && !cleanCmd.includes('go to')) {
+    if (exerciseMatch && !cleanCmd.includes('go to') && !cleanCmd.includes('open')) {
       const val = parseInt(exerciseMatch[1]);
       if (onUpdateField) onUpdateField('exercise', val);
       onNavigateTab('assessment');
@@ -155,98 +159,31 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
       return;
     }
 
-    // 7. Voice Navigation Rules
-    if (cleanCmd.includes('vision') || cleanCmd.includes('food') || cleanCmd.includes('meal') || cleanCmd.includes('camera') || cleanCmd.includes('खाना')) {
-      onNavigateTab('vision');
-      const msg = 'Opening Vision AI Food & Meal Analyzer';
-      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
-      speakFeedback(msg);
-      stopListening();
-      return;
-    } 
-    
-    if (cleanCmd.includes('lab') || cleanCmd.includes('blood') || cleanCmd.includes('biomarker') || cleanCmd.includes('report') || cleanCmd.includes('ब्लड')) {
-      onNavigateTab('lab');
-      const msg = 'Opening Lab Report & Blood Biomarker Analyzer';
-      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
-      speakFeedback(msg);
-      stopListening();
-      return;
+    // 7. Structured Tab Navigation mapping (English + Hindi/Hinglish keys)
+    const tabMappings: { keys: string[]; tab: 'assessment' | 'copilot' | 'radiology' | 'chat' | 'logs' | 'notifications' | 'reports' | 'admin' | 'endpoints' | 'vision' | 'lab'; msg: string }[] = [
+      { keys: ['vision', 'food', 'meal', 'camera', 'khana', 'bhojan'], tab: 'vision', msg: 'Opening Vision AI Food & Meal Analyzer' },
+      { keys: ['lab', 'blood', 'biomarker', 'report', 'test', 'biological', 'biochemical', 'ब्लड', 'खून'], tab: 'lab', msg: 'Opening Lab Report & Blood Biomarker Analyzer' },
+      { keys: ['copilot', 'doctor', 'physician', 'prescription', 'soap', 'clinical', 'कॉपालिट'], tab: 'copilot', msg: 'Opening Physician AI Co-Pilot Workstation' },
+      { keys: ['radiology', 'x-ray', 'mri', 'ct scan', 'ultrasound', 'summarizer', 'रेडियोलॉजी'], tab: 'radiology', msg: 'Opening Radiology Report Summarizer' },
+      { keys: ['assessment', 'profile', 'vitals', 'longevity clock', 'biological age', 'असेसमेंट', 'प्रोफाइल'], tab: 'assessment', msg: 'Navigating to Health Assessment' },
+      { keys: ['logs', 'tracker', 'daily tracker', 'log metrics', 'लॉग्स', 'ट्रैकर'], tab: 'logs', msg: 'Opening Daily Health Tracker' },
+      { keys: ['notifications', 'alerts', 'inbox', 'roast', 'witty', 'zomato', 'push', 'नोटिफिकेशन'], tab: 'notifications', msg: 'Opening Witty Notifications Feed' },
+      { keys: ['weekly report', 'weekly summary', 'reports list', 'progress report', 'रिपोर्ट'], tab: 'reports', msg: 'Opening Weekly Reports' },
+      { keys: ['admin', 'workspace', 'analytics', 'cohort directory', 'population summary', 'system stats', 'एडमिन'], tab: 'admin', msg: 'Navigating to Admin Workspace' },
+      { keys: ['api', 'endpoints', 'docs', 'rest apis info', 'server docs'], tab: 'endpoints', msg: 'Opening REST APIs Info' }
+    ];
+
+    for (const mapping of tabMappings) {
+      if (mapping.keys.some(key => cleanCmd.includes(key))) {
+        onNavigateTab(mapping.tab);
+        setFeedback(`Recognized: "${cleanCmd}" ➔ ${mapping.msg}`);
+        speakFeedback(mapping.msg);
+        stopListening();
+        return;
+      }
     }
 
-    if (cleanCmd.includes('copilot') || cleanCmd.includes('doctor') || cleanCmd.includes('physician') || cleanCmd.includes('ehr') || cleanCmd.includes('कॉपालिट')) {
-      onNavigateTab('copilot');
-      const msg = 'Opening Physician AI Co-Pilot Workstation';
-      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
-      speakFeedback(msg);
-      stopListening();
-      return;
-    }
-
-    if (cleanCmd.includes('radiology') || cleanCmd.includes('x-ray') || cleanCmd.includes('mri') || cleanCmd.includes('scan') || cleanCmd.includes('रेडियोलॉजी')) {
-      onNavigateTab('radiology');
-      const msg = 'Opening Radiology Report Summarizer';
-      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
-      speakFeedback(msg);
-      stopListening();
-      return;
-    }
-
-    if (cleanCmd.includes('assessment') || cleanCmd.includes('profile') || cleanCmd.includes('vitals') || cleanCmd.includes('असेसमेंट') || cleanCmd.includes('प्रोफाइल')) {
-      onNavigateTab('assessment');
-      const msg = 'Navigating to Health Assessment';
-      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
-      speakFeedback(msg);
-      stopListening();
-      return;
-    }
-
-    if (cleanCmd.includes('logs') || cleanCmd.includes('tracker') || cleanCmd.includes('daily') || cleanCmd.includes('लॉग्स') || cleanCmd.includes('ट्रैकर')) {
-      onNavigateTab('logs');
-      const msg = 'Opening Daily Health Tracker';
-      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
-      speakFeedback(msg);
-      stopListening();
-      return;
-    }
-
-    if (cleanCmd.includes('notifications') || cleanCmd.includes('alerts') || cleanCmd.includes('नोटिफिकेशन')) {
-      onNavigateTab('notifications');
-      const msg = 'Opening Notifications';
-      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
-      speakFeedback(msg);
-      stopListening();
-      return;
-    }
-
-    if (cleanCmd.includes('reports') || cleanCmd.includes('weekly') || cleanCmd.includes('रिपोर्ट')) {
-      onNavigateTab('reports');
-      const msg = 'Opening Weekly Reports';
-      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
-      speakFeedback(msg);
-      stopListening();
-      return;
-    }
-
-    if (cleanCmd.includes('admin') || cleanCmd.includes('workspace') || cleanCmd.includes('analytics') || cleanCmd.includes('एडमिन')) {
-      onNavigateTab('admin');
-      const msg = 'Navigating to Admin Workspace';
-      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
-      speakFeedback(msg);
-      stopListening();
-      return;
-    }
-
-    if (cleanCmd.includes('api') || cleanCmd.includes('endpoints') || cleanCmd.includes('docs')) {
-      onNavigateTab('endpoints');
-      const msg = 'Opening REST APIs Info';
-      setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
-      speakFeedback(msg);
-      stopListening();
-      return;
-    }
-
-    if (cleanCmd.includes('logout') || cleanCmd.includes('sign out') || cleanCmd.includes('लॉगआउट')) {
+    if (cleanCmd.includes('logout') || cleanCmd.includes('sign out') || cleanCmd.includes('logout kholo') || cleanCmd.includes('लॉगआउट')) {
       if (onLogout) onLogout();
       const msg = 'Logging out of session';
       setFeedback(`Recognized: "${cleanCmd}" ➔ ${msg}`);
