@@ -252,22 +252,26 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
         {/* Mic Toggle Button */}
         <button
           onClick={toggleMic}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shadow-md ${
             isListening
-              ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30 animate-pulse'
-              : 'bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/40 border border-indigo-500/30'
+              ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-rose-600/40 animate-pulse ring-2 ring-rose-400/50'
+              : 'bg-slate-900 hover:bg-slate-800 text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 shadow-cyan-950/40'
           }`}
           title={isListening ? 'Stop Listening' : 'Start Voice Navigation'}
         >
           {isListening ? (
             <>
-              <Mic className="w-3.5 h-3.5 animate-spin" />
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+              </span>
+              <Mic className="w-3.5 h-3.5 animate-bounce" />
               <span>Listening...</span>
             </>
           ) : (
             <>
               <MicOff className="w-3.5 h-3.5" />
-              <span>Voice Nav</span>
+              <span>Voice AI Control</span>
             </>
           )}
         </button>
@@ -275,7 +279,7 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
         {/* Sound Toggle */}
         <button
           onClick={() => setSoundEnabled(!soundEnabled)}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+          className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition-colors"
           title={soundEnabled ? 'Mute Audio Response' : 'Enable Audio Response'}
         >
           {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-emerald-400" /> : <VolumeX className="w-3.5 h-3.5 text-slate-500" />}
@@ -284,7 +288,7 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
         {/* Commands Guide Button */}
         <button
           onClick={() => setShowCommandsModal(!showCommandsModal)}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+          className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition-colors"
           title="Voice Commands List"
         >
           <HelpCircle className="w-3.5 h-3.5 text-indigo-400" />
@@ -293,60 +297,56 @@ export default function VoiceNavigation({ onNavigateTab, onLogout, onBypass, onU
 
       {/* Voice Activity Feedback Banner */}
       {isListening && (
-        <div className="absolute top-full right-0 mt-2 w-72 bg-slate-900 border border-rose-800/80 p-3 rounded-xl shadow-2xl z-50 text-xs space-y-1">
+        <div className="absolute top-full right-0 mt-2 w-80 bg-slate-950/95 border border-rose-500/40 p-3.5 rounded-2xl shadow-2xl backdrop-blur-xl z-50 text-xs space-y-2 animate-in fade-in zoom-in-95 duration-200">
           <div className="flex items-center justify-between text-rose-300 font-semibold">
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-              Listening for command...
+              Listening to voice input...
             </span>
-            <span className="text-[10px] font-mono text-slate-500 uppercase">Live Voice</span>
+            <span className="text-[10px] font-mono text-rose-400/80 bg-rose-950/80 px-2 py-0.5 rounded-full border border-rose-800/40">LIVE MIC</span>
           </div>
-          <p className="text-slate-200 font-mono italic text-[11px] bg-slate-950 p-1.5 rounded border border-slate-800">
-            "{transcript || 'Say a command like: Go to Assessment'}"
+          <p className="text-slate-200 font-mono italic text-[11px] bg-slate-900/90 p-2 rounded-xl border border-slate-800">
+            "{transcript || 'Speak a command (e.g. "Go to Radiology", "SOS Alert", "Set weight 70")'}"
           </p>
         </div>
       )}
 
       {/* Voice Commands Cheat Sheet Modal */}
       {showCommandsModal && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-slate-950 border border-indigo-900/80 p-4 rounded-2xl shadow-2xl z-50 text-xs space-y-3">
+        <div className="absolute top-full right-0 mt-2 w-84 bg-slate-950/95 border border-cyan-500/30 p-4 rounded-2xl shadow-2xl backdrop-blur-xl z-50 text-xs space-y-3">
           <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-            <div className="flex items-center gap-2 text-indigo-400 font-bold">
+            <div className="flex items-center gap-2 text-cyan-400 font-bold font-heading">
               <Command className="w-4 h-4" />
-              <span>Voice Commands Guide</span>
+              <span>Voice AI Commands Guide</span>
             </div>
             <button 
               onClick={() => setShowCommandsModal(false)}
-              className="text-slate-500 hover:text-slate-300 text-xs font-mono"
+              className="text-slate-500 hover:text-slate-300 text-xs font-mono p-1 rounded-lg hover:bg-slate-900"
             >
               ✕
             </button>
           </div>
 
-          <div className="space-y-1.5 text-slate-300">
-            <div className="flex items-center justify-between bg-slate-900 p-1.5 rounded border border-slate-800">
-              <span className="font-mono text-emerald-400">"Go to Assessment"</span>
-              <span className="text-[10px] text-slate-400">Health Profiler</span>
+          <div className="space-y-1.5 text-slate-300 max-h-60 overflow-y-auto pr-1">
+            <div className="flex items-center justify-between bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+              <span className="font-mono text-emerald-400 font-medium">"Go to Assessment"</span>
+              <span className="text-[10px] text-slate-400">Biological Age</span>
             </div>
-            <div className="flex items-center justify-between bg-slate-900 p-1.5 rounded border border-slate-800">
-              <span className="font-mono text-emerald-400">"Open Chat"</span>
-              <span className="text-[10px] text-slate-400">AI Companion</span>
+            <div className="flex items-center justify-between bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+              <span className="font-mono text-emerald-400 font-medium">"Open Copilot"</span>
+              <span className="text-[10px] text-slate-400">Physician EHR</span>
             </div>
-            <div className="flex items-center justify-between bg-slate-900 p-1.5 rounded border border-slate-800">
-              <span className="font-mono text-emerald-400">"Open Logs"</span>
-              <span className="text-[10px] text-slate-400">Health Tracker</span>
+            <div className="flex items-center justify-between bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+              <span className="font-mono text-emerald-400 font-medium">"Open Radiology"</span>
+              <span className="text-[10px] text-slate-400">Imaging Scanner</span>
             </div>
-            <div className="flex items-center justify-between bg-slate-900 p-1.5 rounded border border-slate-800">
-              <span className="font-mono text-emerald-400">"Show Notifications"</span>
-              <span className="text-[10px] text-slate-400">System Alerts</span>
+            <div className="flex items-center justify-between bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+              <span className="font-mono text-emerald-400 font-medium">"Analyze Meal"</span>
+              <span className="text-[10px] text-slate-400">Macro Vision</span>
             </div>
-            <div className="flex items-center justify-between bg-slate-900 p-1.5 rounded border border-slate-800">
-              <span className="font-mono text-emerald-400">"Show Reports"</span>
-              <span className="text-[10px] text-slate-400">Weekly Summaries</span>
-            </div>
-            <div className="flex items-center justify-between bg-slate-900 p-1.5 rounded border border-slate-800">
-              <span className="font-mono text-emerald-400">"Open Admin"</span>
-              <span className="text-[10px] text-slate-400">Analytics Controls</span>
+            <div className="flex items-center justify-between bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+              <span className="font-mono text-rose-400 font-medium">"Dispatch SOS"</span>
+              <span className="text-[10px] text-rose-300">Paramedic Brief</span>
             </div>
           </div>
         </div>

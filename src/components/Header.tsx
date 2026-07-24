@@ -1,6 +1,5 @@
 import React from 'react';
-import { Shield, Sparkles, LogOut, CheckCircle, Database, AlertCircle, RefreshCw, Activity } from 'lucide-react';
-import { isDemoMode, setDemoMode } from '../lib/api';
+import { Shield, Sparkles, LogOut, CheckCircle, Database, AlertCircle, RefreshCw, Activity, Siren, Zap } from 'lucide-react';
 
 interface HeaderProps {
   user: any;
@@ -10,6 +9,7 @@ interface HeaderProps {
   onRefreshSession: () => void;
   isDemo: boolean;
   onToggleDemo: (val: boolean) => void;
+  onTriggerSos?: () => void;
 }
 
 export default function Header({
@@ -20,40 +20,62 @@ export default function Header({
   onRefreshSession,
   isDemo,
   onToggleDemo,
+  onTriggerSos
 }: HeaderProps) {
   const userInitials = user?.email
     ? user.email.slice(0, 2).toUpperCase()
     : 'US';
 
   return (
-    <header id="app-header" className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+    <header id="app-header" className="border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-xl sticky top-0 z-50 transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
         {/* App Logo */}
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-gradient-to-tr from-emerald-500 to-teal-500 rounded-xl text-slate-950 shadow-md shadow-emerald-500/20">
-            <Activity className="w-5.5 h-5.5 stroke-[2.5]" />
+        <div className="flex items-center gap-3">
+          <div className="relative p-2.5 bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl text-slate-950 shadow-lg shadow-emerald-500/20 group cursor-pointer">
+            <Activity className="w-5 h-5 stroke-[2.5] animate-pulse" />
+            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            </span>
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-1.5 font-sans">
-              Vitalis<span className="text-emerald-400 font-medium text-xs font-mono bg-emerald-950/60 border border-emerald-800/40 px-1.5 py-0.5 rounded-full">AI</span>
-            </h1>
-            <p className="text-[10px] text-slate-400 font-mono hidden sm:block">CLINICAL PREDICTION & LIFESTYLE ENGINE</p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-1 font-heading">
+                Health<span className="gradient-text-emerald">OS</span>
+              </h1>
+              <span className="text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Zap className="w-2.5 h-2.5" /> 2.5 Flash
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400 font-mono hidden sm:block tracking-wide uppercase">AI PREVENTIVE HEALTH & LONGEVITY ENGINE</p>
           </div>
         </div>
 
-        {/* Integration Status & Demo Mode Toggle */}
-        <div className="flex items-center gap-3">
-          {/* Status badge */}
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800/80 text-xs text-slate-400 font-mono">
-            <span>Database:</span>
+        {/* Status, SOS & Actions */}
+        <div className="flex items-center gap-2.5">
+          {/* Quick SOS Red Alert Button */}
+          {onTriggerSos && (
+            <button
+              onClick={onTriggerSos}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-600/50 hover:border-rose-500 text-rose-300 hover:text-white text-xs font-semibold rounded-xl transition-all shadow-lg shadow-rose-950/50 group animate-pulse-slow"
+              title="Trigger SOS Paramedic Dispatch Alert"
+            >
+              <Siren className="w-3.5 h-3.5 text-rose-400 group-hover:rotate-12 transition-transform" />
+              <span className="hidden sm:inline font-mono">SOS ALERT</span>
+            </button>
+          )}
+
+          {/* Database Status */}
+          <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-400 font-mono">
+            <span className="text-slate-500">DB:</span>
             {isBackendOnline ? (
               isDbConfigured ? (
                 <span className="text-emerald-400 flex items-center gap-1 font-medium">
-                  <CheckCircle className="w-3.5 h-3.5 shrink-0" /> Live SQL Cloud
+                  <CheckCircle className="w-3.5 h-3.5 shrink-0 text-emerald-400" /> Live SQL
                 </span>
               ) : (
                 <span className="text-amber-400 flex items-center gap-1 font-medium">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0 animate-pulse" /> Offline Fallback
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 animate-pulse" /> Sandbox DB
                 </span>
               )
             ) : (
@@ -64,57 +86,56 @@ export default function Header({
             <button
               onClick={onRefreshSession}
               title="Refresh connection status"
-              className="text-slate-500 hover:text-white transition-colors ml-1 p-0.5 hover:bg-slate-800 rounded"
+              className="text-slate-500 hover:text-white transition-colors p-0.5 hover:bg-slate-800 rounded-md"
             >
               <RefreshCw className="w-3 h-3" />
             </button>
           </div>
 
-          {/* Sandbox toggle banner */}
-          <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-xl p-1 shrink-0">
+          {/* Sandbox vs Live toggle */}
+          <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-xl p-1 shrink-0">
             <button
               onClick={() => onToggleDemo(false)}
               disabled={!isDbConfigured}
-              className={`px-3 py-1 rounded-lg text-xs font-mono font-medium transition-all ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition-all ${
                 !isDemo && isDbConfigured
-                  ? 'bg-emerald-500 text-slate-950 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 disabled:opacity-30 disabled:hover:text-slate-400'
+                  ? 'bg-emerald-500 text-slate-950 shadow-md font-bold'
+                  : 'text-slate-400 hover:text-slate-200 disabled:opacity-30'
               }`}
-              title={!isDbConfigured ? "Live mode requires backend configuration" : "Sync with live Postgres Cloud DB"}
             >
               Live
             </button>
             <button
               onClick={() => onToggleDemo(true)}
-              className={`px-3 py-1 rounded-lg text-xs font-mono font-medium transition-all ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition-all ${
                 isDemo
-                  ? 'bg-amber-500/10 border border-amber-500/30 text-amber-400 shadow-sm'
+                  ? 'bg-amber-500/15 border border-amber-500/30 text-amber-400 shadow-sm font-bold'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
-              title="Local isolated client sandbox"
             >
               Sandbox
             </button>
           </div>
 
-          {/* User profile dropdown / logout */}
+          {/* User profile avatar & logout */}
           {user && (
-            <div className="flex items-center gap-2 pl-2 border-l border-slate-800">
-              <div className="hidden sm:flex flex-col text-right">
-                <span className="text-xs font-medium text-slate-200 max-w-[120px] truncate">
-                  {user.email || 'Anonymous'}
+            <div className="flex items-center gap-2 pl-2 border-l border-slate-800/80">
+              <div className="hidden md:flex flex-col text-right">
+                <span className="text-xs font-semibold text-slate-200 max-w-[130px] truncate">
+                  {user.email || 'Patient User'}
                 </span>
-                <span className="text-[10px] font-mono text-slate-500">
-                  {isDemo ? 'Sandbox Session' : 'Secured User'}
+                <span className="text-[10px] font-mono text-emerald-400 flex items-center justify-end gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-ping" />
+                  Active
                 </span>
               </div>
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-teal-500 to-emerald-500 text-slate-950 flex items-center justify-center font-bold text-xs shadow-md">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 flex items-center justify-center font-bold text-xs shadow-md shadow-emerald-500/20 ring-2 ring-emerald-500/30">
                 {userInitials}
               </div>
               <button
                 onClick={onLogout}
-                className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800/40 rounded-xl transition-all"
-                title="Log out of application"
+                className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-900 rounded-xl transition-all border border-transparent hover:border-rose-900/40"
+                title="Log out of HealthOS"
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -125,3 +146,4 @@ export default function Header({
     </header>
   );
 }
+

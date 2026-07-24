@@ -6,6 +6,7 @@ import {
   Bell, FileText, ShieldAlert, Users, BarChart3, Stethoscope, Layers, Volume2, VolumeX, Globe, Mic, MicOff, Download,
   Camera, Upload, Flame, Siren, Dna, Award, Zap, Clock
 } from 'lucide-react';
+import Header from './components/Header';
 import ProfileForm from './components/ProfileForm';
 import VoiceNavigation from './components/VoiceNavigation';
 import PhysicianCopilot from './components/PhysicianCopilot';
@@ -782,60 +783,26 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans p-4 sm:p-6 lg:p-8 flex flex-col justify-between">
-      <div className="max-w-6xl w-full mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden flex-grow flex flex-col gap-6">
-        {/* Decorative background blur */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-[#080C14] text-slate-100 font-sans relative overflow-x-hidden flex flex-col justify-between selection:bg-emerald-500/30">
+      {/* Top Header Navigation */}
+      <Header
+        user={isAuthenticated ? { email } : null}
+        onLogout={handleLogout}
+        isBackendOnline={true}
+        isDbConfigured={true}
+        onRefreshSession={() => {}}
+        isDemo={!isAuthenticated}
+        onToggleDemo={(val) => {
+          if (val) handleUseDevToken();
+        }}
+        onTriggerSos={() => setIsSosOpen(true)}
+      />
 
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-5 z-10">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-500/10">
-              <Sparkles className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight">AI Health Coach & Chat System</h1>
-              <p className="text-xs text-slate-400">Personalized Health Intelligence • Gemini 3.5 Engine</p>
-            </div>
-          </div>
-          
-          {/* Top Status & Dev Mode Control */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {isAuthenticated ? (
-              <div className="flex items-center gap-2 bg-indigo-950/40 border border-indigo-900/60 px-3 py-1.5 rounded-lg text-xs">
-                <UserCheck className="w-3.5 h-3.5 text-indigo-400" />
-                <span className="text-indigo-300 font-medium">Session: {email}</span>
-                <button 
-                  onClick={handleLogout}
-                  className="ml-2 pl-2 border-l border-indigo-800 text-rose-400 hover:text-rose-300 transition-colors"
-                  title="Logout"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 bg-amber-950/30 border border-amber-900/40 px-3 py-1.5 rounded-lg text-xs text-amber-300">
-                <Shield className="w-3.5 h-3.5" />
-                <span>Sandbox Mode (Unauthorized)</span>
-                <button 
-                  onClick={handleUseDevToken}
-                  className="ml-2 underline text-amber-200 hover:text-amber-100 font-semibold"
-                >
-                  Bypass
-                </button>
-              </div>
-            )}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-900/60 text-emerald-400 text-xs font-semibold">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              Services Online
-            </div>
-          </div>
-        </div>
+      {/* Decorative ambient glowing orbs */}
+      <div className="absolute top-[-80px] left-[-100px] w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[140px] pointer-events-none animate-orb-1" />
+      <div className="absolute bottom-[-100px] right-[-100px] w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[160px] pointer-events-none animate-orb-2" />
 
+      <main className="max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex-grow flex flex-col gap-6 relative z-10">
         {/* Auth Panel when not logged in */}
         {!isAuthenticated && (
           <div className="max-w-lg w-full mx-auto my-auto bg-slate-950 border border-slate-800/80 p-6 rounded-2xl flex flex-col gap-5 shadow-2xl z-10 my-8">
@@ -2900,10 +2867,11 @@ export default function App() {
         )}
 
         {/* Footer info block */}
-        <p className="text-[10px] text-slate-500 mt-2 pt-4 border-t border-slate-800/60 leading-relaxed text-center z-10">
-          Listening on port 3000. Built in custom developer preview mode with local database storage support.
-        </p>
-      </div>
+        <footer className="text-[11px] text-slate-500 mt-4 pt-4 border-t border-slate-800/60 leading-relaxed text-center z-10 font-mono flex items-center justify-between flex-wrap gap-2">
+          <span>🩺 HealthOS AI — Biological Longevity & Clinical Operating System</span>
+          <span className="text-emerald-400/80">Powered by Gemini 2.5 Flash & React 19</span>
+        </footer>
+      </main>
     </div>
   );
 }
